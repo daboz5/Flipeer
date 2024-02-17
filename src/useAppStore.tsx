@@ -1,21 +1,41 @@
 import { create } from 'zustand';
+import { Creature, MapData } from './type';
 
 type State = {
-    scale: number,
-    pos: { x: number, y: number },
+    player: Creature;
+    tileSize: [number, number];
+    mapData: MapData | null;
 }
 
 type Action = {
-    setPos(newPos: { x: number, y: number }): void,
+    setMapData(newMapData: MapData | null): void,
+    setPCData(newPCData: Creature): void,
 }
 
 const useAppStore = create<State & Action>((set) => ({
-    scale: 40,
+    tileSize: [9, 9],
 
-    pos: { x: 0, y: 0 },
-    setPos: (newPosition) => set(() => ({
-        pos: newPosition
+    player: {
+        id: 0,
+        hp: 5,
+        maxHp: 5,
+        attack: 0,
+        defence: 0,
+        energy: 3,
+        sense: { fo: 1, si: 1, ba: 1 },
+        move: { fo: 1, si: 1, ba: 1 },
+        size: [1],
+        resistence: [],
+        color: "pink"
+    },
+    setPCData: (newPCData) => set(() => ({
+        player: newPCData
     })),
+
+    mapData: null,
+    setMapData: (newMapData) => set(() => ({
+        mapData: newMapData
+    }))
 }));
 
 export default useAppStore;

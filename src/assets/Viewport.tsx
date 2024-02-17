@@ -1,17 +1,17 @@
-import useCreature from "./useCreature";
-import MapTile from "../assets/MapTile";
 import { useEffect } from "preact/hooks";
 import useAppStore from "../useAppStore";
+import useCreature from "./useCreature";
+import useGame from "./useGame";
+import useMap from "./useMap";
 
 export default function Viewport() {
 
+    const { mapData } = useAppStore();
     const {
-        startCreature,
         eventListenerMove,
-        createCreature,
     } = useCreature();
-
-    const { pos } = useAppStore();
+    const { createTile } = useMap();
+    const { newGame } = useGame();
 
     useEffect(() => {
         document.addEventListener("keydown", eventListenerMove);
@@ -19,10 +19,15 @@ export default function Viewport() {
     }, [eventListenerMove]);
 
     return (<>
+
         <div id="viewport">
-            {createCreature(startCreature)}
-            <MapTile />
+            {mapData ? createTile(mapData) : <></>}
         </div>
-        <div style={{ position: "absolute", top: 400 }}>{pos.x},{pos.y}</div>
+
+        <button
+            onClick={() => newGame()}>
+            New Game
+        </button>
+
     </>)
 }

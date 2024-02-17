@@ -1,34 +1,9 @@
+import { Creature } from "../type";
 import useAppStore from "../useAppStore";
 
 export default function useCreature() {
 
-    type Creature = {
-        hp: number;
-        maxHp: number;
-        attack: number;
-        defence: number;
-        energy: number;
-        sense: { fo: number, si: number, ba: number };
-        move: { fo: number, si: number, ba: number };
-        size: number[];
-        resistence: string[];
-        color: string;
-    }
-
-    const { scale, pos, setPos } = useAppStore();
-
-    const startCreature: Creature = {
-        hp: 5,
-        maxHp: 5,
-        attack: 0,
-        defence: 0,
-        energy: 3,
-        sense: { fo: 1, si: 1, ba: 1 },
-        move: { fo: 1, si: 1, ba: 1 },
-        size: [1],
-        resistence: [],
-        color: "pink"
-    }
+    const { mapData, setMapData } = useAppStore();
 
     const createCreature = (data: Creature) => {
         const body = data.size.map((l) => {
@@ -40,7 +15,7 @@ export default function useCreature() {
             return (<>{bSegArr}</>)
         });
         return (
-            <div id="player" class="creature" style={{ top: 0, left: 0 }}>
+            <div class="creature">
                 {body}
             </div>
         )
@@ -48,31 +23,42 @@ export default function useCreature() {
 
     const eventListenerMove = (event: KeyboardEvent) => {
         const key = event.key;
+        if (!mapData) { return }
         if (key === "ArrowUp" || key === "ArrowDown" || key === "ArrowLeft" || key === "ArrowRight") {
-            const pc = document.getElementById("player");
-            const { x, y } = pos;
-            if (!pc) { return }
+            let pcCoor = { x: 0, y: 0 };
+            mapData.forEach(
+                (x) => x.forEach(
+                    (y) => {
+                        if (y.creature === "player") {
+                            pcCoor = y.coor;
+                        }
+                    }
+                )
+            );
             if (key === "ArrowUp") {
-                setPos({ x: x, y: y - 1 });
-                pc.style.top = `${(y * scale) - scale}px`;
+                mapData[pcCoor.y + 1][pcCoor.x].creature = "player";
+                mapData[pcCoor.y][pcCoor.x].creature = null;
+                setMapData(mapData);
             }
             else if (key === "ArrowLeft") {
-                setPos({ x: x - 1, y: y });
-                pc.style.left = `${(x * scale) - scale}px`;
+                mapData[pcCoor.y][pcCoor.x].creature = null;
+                mapData[pcCoor.y][pcCoor.x - 1].creature = "player";
+                setMapData(mapData);
             }
             else if (key === "ArrowRight") {
-                setPos({ x: x + 1, y: y });
-                pc.style.left = `${(x * scale) + scale}px`;
+                mapData[pcCoor.y][pcCoor.x].creature = null;
+                mapData[pcCoor.y][pcCoor.x + 1].creature = "player";
+                setMapData(mapData);
             }
             else if (key === "ArrowDown") {
-                setPos({ x: x, y: y + 1 });
-                pc.style.top = `${(y * scale) + scale}px`;
+                mapData[pcCoor.y][pcCoor.x].creature = null;
+                mapData[pcCoor.y - 1][pcCoor.x].creature = "player";
+                setMapData(mapData);
             }
         }
     }
 
     return {
-        startCreature,
         createCreature,
         eventListenerMove
     }
