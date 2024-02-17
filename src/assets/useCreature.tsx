@@ -15,7 +15,7 @@ export default function useCreature() {
         color: string;
     }
 
-    const { pos, setPos } = useAppStore();
+    const { scale, pos, setPos } = useAppStore();
 
     const startCreature: Creature = {
         hp: 5,
@@ -49,26 +49,24 @@ export default function useCreature() {
     const eventListenerMove = (event: KeyboardEvent) => {
         const key = event.key;
         if (key === "ArrowUp" || key === "ArrowDown" || key === "ArrowLeft" || key === "ArrowRight") {
-
             const pc = document.getElementById("player");
+            const { x, y } = pos;
             if (!pc) { return }
-            const posPC = pc.getBoundingClientRect();
-
-            if (key === "ArrowUp" && pos.y <= 0) {
-                setPos({ x: pos.x, y: pos.y - 1 });
-                pc.style.top = `${y - 40}px`;
+            if (key === "ArrowUp") {
+                setPos({ x: x, y: y - 1 });
+                pc.style.top = `${(y * scale) - scale}px`;
             }
             else if (key === "ArrowLeft") {
-                setPos({ x: pos.x - 1, y: pos.y });
-                pc.style.left = `${x - 40}px`;
+                setPos({ x: x - 1, y: y });
+                pc.style.left = `${(x * scale) - scale}px`;
             }
             else if (key === "ArrowRight") {
-                setPos({ x: pos.x + 1, y: pos.y });
-                pc.style.left = `${x + 40}px`;
+                setPos({ x: x + 1, y: y });
+                pc.style.left = `${(x * scale) + scale}px`;
             }
             else if (key === "ArrowDown") {
-                setPos({ x: pos.x, y: pos.y + 1 });
-                pc.style.top = `${y + 40}px`;
+                setPos({ x: x, y: y + 1 });
+                pc.style.top = `${(y * scale) + scale}px`;
             }
         }
     }

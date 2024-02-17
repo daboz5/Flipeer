@@ -11,7 +11,7 @@ export default function Viewport() {
         createCreature,
     } = useCreature();
 
-    const { x, y } = useAppStore();
+    const { pos } = useAppStore();
 
     useEffect(() => {
         document.addEventListener("keydown", eventListenerMove);
@@ -23,6 +23,6 @@ export default function Viewport() {
             {createCreature(startCreature)}
             <MapTile />
         </div>
-        <div style={{ position: "absolute", top: 400 }}>{x},{y}</div>
+        <div style={{ position: "absolute", top: 400 }}>{pos.x},{pos.y}</div>
     </>)
 }
