@@ -96,16 +96,23 @@ export default function useMap() {
         const tile = iData.map((y) => {
             const yArr = y.map((x) => {
                 const creature = x.creature;
-
+                let colour = "";
+                if (x.type === "vulcano") {
+                    colour = "red";
+                } else if (x.context.tiles.includes("vulcano")) {
+                    colour = "orange";
+                } else {
+                    colour = "blue"
+                }
                 return (
                     <div
                         class="colTile"
                         style={{
-                            backgroundColor: x.type === "vulcano" ? "red" : "blue"
+                            backgroundColor: colour
                         }}>
                         {/* {x.coor.x},{x.coor.y} */}
                         {/* {x.context.border ? "true" : "no"} */}
-                        {x.context.tiles.includes("vulcano") ? "x" : "no"}
+                        {/* {x.context.tiles.includes("vulcano") ? "x" : "no"} */}
                         {creature?.id === "player" ?
                             createCreature(player) :
                             creature !== null ?

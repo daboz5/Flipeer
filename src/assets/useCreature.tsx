@@ -3,7 +3,7 @@ import useAppStore from "../useAppStore";
 
 export default function useCreature() {
 
-    const { mapData, setMapData } = useAppStore();
+    const { tileSize, mapData, setMapData } = useAppStore();
 
     const createCreature = (data: Creature) => {
         const body = data.size.map((l) => {
@@ -36,24 +36,32 @@ export default function useCreature() {
                 )
             );
             if (key === "ArrowUp") {
-                mapData[pcCoor.y + 1][pcCoor.x].creature = { id: "player" };
-                mapData[pcCoor.y][pcCoor.x].creature = null;
-                setMapData(mapData);
+                if ((pcCoor.y + 1) < tileSize[1]) {
+                    mapData[pcCoor.y + 1][pcCoor.x].creature = { id: "player" };
+                    mapData[pcCoor.y][pcCoor.x].creature = null;
+                    setMapData(mapData);
+                }
             }
             else if (key === "ArrowLeft") {
-                mapData[pcCoor.y][pcCoor.x].creature = null;
-                mapData[pcCoor.y][pcCoor.x - 1].creature = { id: "player" };
-                setMapData(mapData);
+                if ((pcCoor.x - 1) >= 0) {
+                    mapData[pcCoor.y][pcCoor.x].creature = null;
+                    mapData[pcCoor.y][pcCoor.x - 1].creature = { id: "player" };
+                    setMapData(mapData);
+                }
             }
             else if (key === "ArrowRight") {
-                mapData[pcCoor.y][pcCoor.x].creature = null;
-                mapData[pcCoor.y][pcCoor.x + 1].creature = { id: "player" };
-                setMapData(mapData);
+                if ((pcCoor.x + 1) < tileSize[0]) {
+                    mapData[pcCoor.y][pcCoor.x].creature = null;
+                    mapData[pcCoor.y][pcCoor.x + 1].creature = { id: "player" };
+                    setMapData(mapData);
+                }
             }
             else if (key === "ArrowDown") {
-                mapData[pcCoor.y][pcCoor.x].creature = null;
-                mapData[pcCoor.y - 1][pcCoor.x].creature = { id: "player" };
-                setMapData(mapData);
+                if ((pcCoor.y - 1) >= 0) {
+                    mapData[pcCoor.y][pcCoor.x].creature = null;
+                    mapData[pcCoor.y - 1][pcCoor.x].creature = { id: "player" };
+                    setMapData(mapData);
+                }
             }
         }
     }
