@@ -10,7 +10,7 @@ export default function useGame() {
 
     const newGame = () => {
         let newTile = createTileData(tileSize);
-        newTile[4][4].creature = "player";
+        newTile[4][4].creature = { id: "player" };
         setMapData(newTile);
     };
 

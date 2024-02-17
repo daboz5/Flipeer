@@ -1,9 +1,13 @@
 type TileType = "sea" | "vulcano";
 
 type TileData = {
-    coor: { x: number, y: number }
-    creature: Creature | "player" | null;
+    coor: { x: number, y: number };
+    creature: Creature | { id: "player" } | null;
     type: TileType;
+    context: {
+        tiles: TileType[];
+        border: boolean;
+    }
 };
 
 type MapData = TileData[][];

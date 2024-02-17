@@ -29,30 +29,30 @@ export default function useCreature() {
             mapData.forEach(
                 (x) => x.forEach(
                     (y) => {
-                        if (y.creature === "player") {
+                        if (y.creature?.id === "player") {
                             pcCoor = y.coor;
                         }
                     }
                 )
             );
             if (key === "ArrowUp") {
-                mapData[pcCoor.y + 1][pcCoor.x].creature = "player";
+                mapData[pcCoor.y + 1][pcCoor.x].creature = { id: "player" };
                 mapData[pcCoor.y][pcCoor.x].creature = null;
                 setMapData(mapData);
             }
             else if (key === "ArrowLeft") {
                 mapData[pcCoor.y][pcCoor.x].creature = null;
-                mapData[pcCoor.y][pcCoor.x - 1].creature = "player";
+                mapData[pcCoor.y][pcCoor.x - 1].creature = { id: "player" };
                 setMapData(mapData);
             }
             else if (key === "ArrowRight") {
                 mapData[pcCoor.y][pcCoor.x].creature = null;
-                mapData[pcCoor.y][pcCoor.x + 1].creature = "player";
+                mapData[pcCoor.y][pcCoor.x + 1].creature = { id: "player" };
                 setMapData(mapData);
             }
             else if (key === "ArrowDown") {
                 mapData[pcCoor.y][pcCoor.x].creature = null;
-                mapData[pcCoor.y - 1][pcCoor.x].creature = "player";
+                mapData[pcCoor.y - 1][pcCoor.x].creature = { id: "player" };
                 setMapData(mapData);
             }
         }
