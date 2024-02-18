@@ -10,7 +10,7 @@ export default function useGame() {
 
 
     const newGame = () => {
-        let mid: [number, number] = [Math.floor(tileSize[0] / 2), Math.floor(tileSize[1] / 2)]
+        let mid: [number, number] = [Math.floor(tileSize[1] / 2), Math.floor(tileSize[0] / 2)]
         let newTile = createTileData(tileSize);
         newTile[mid[0]][mid[1]].creature = { id: "player" };
         setMapData(newTile);
