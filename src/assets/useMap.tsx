@@ -12,8 +12,10 @@ export default function useMap() {
     }
 
     const getTileType = () => {
-        const num = getRandomInt(7);
-        if (num === 6) {
+        const chanNum = 15;
+        const num = getRandomInt(chanNum);
+        console.log(num, chanNum)
+        if (num === (chanNum - 1)) {
             return "vulcano";
         } else {
             return "sea";
