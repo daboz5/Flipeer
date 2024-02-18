@@ -8,12 +8,16 @@ type State = {
 }
 
 type Action = {
+    setTileSize(newSize: [number, number]): void
     setMapData(newMapData: MapData | null): void,
     setPCData(newPCData: Creature): void,
 }
 
 const useAppStore = create<State & Action>((set) => ({
     tileSize: [15, 15],
+    setTileSize: (newSize) => set(() => ({
+        tileSize: newSize
+    })),
 
     player: {
         id: 0,
