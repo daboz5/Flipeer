@@ -47,13 +47,13 @@ export default function Game() {
                     <input
                         type={"number"}
                         id="xInput"
-                        placeholder={tileSize[0].toString()}
+                        placeholder={"x"}
                         required>
                     </input>
                     <input
                         type={"number"}
                         id="yInput"
-                        placeholder={tileSize[1].toString()}
+                        placeholder={"y"}
                         required>
                     </input>
                 </label>

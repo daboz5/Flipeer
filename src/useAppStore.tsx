@@ -14,7 +14,7 @@ type Action = {
 }
 
 const useAppStore = create<State & Action>((set) => ({
-    tileSize: [15, 15],
+    tileSize: [10, 10],
     setTileSize: (newSize) => set(() => ({
         tileSize: newSize
     })),
