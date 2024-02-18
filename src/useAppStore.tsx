@@ -26,6 +26,7 @@ const useAppStore = create<State & Action>((set) => ({
         attack: 0,
         defence: 0,
         energy: 3,
+        maxEnergy: 3,
         sense: { fo: 1, si: 1, ba: 1 },
         move: { fo: 1, si: 1, ba: 1 },
         size: [1],

@@ -19,6 +19,7 @@ type Creature = {
     attack: number;
     defence: number;
     energy: number;
+    maxEnergy: number;
     sense: { fo: number, si: number, ba: number };
     move: { fo: number, si: number, ba: number };
     size: number[];

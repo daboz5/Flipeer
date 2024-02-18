@@ -9,7 +9,7 @@ import "../assets/Menu.css";
 
 export default function Game() {
 
-    const { tileSize, mapData } = useAppStore();
+    const { player, mapData } = useAppStore();
     const {
         eventListenerMove,
     } = useCreature();
@@ -26,6 +26,15 @@ export default function Game() {
         <div id="viewport">
             {mapData ? createTile(mapData) : <></>}
         </div>
+
+        <div id="pcStats" class={"flex alignFlex"}>
+            <p>{player.hp} / {player.maxHp} Hp</p>
+            <p>{player.energy} Energy</p>
+            <p>{player.attack} Atk</p>
+            <p>{player.defence} Def</p>
+            <p>Size {player.size}</p>
+        </div>
+
         <div id="menu" class={"colFlex"}>
             <button
                 onClick={() => newGame()}>

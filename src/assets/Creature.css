@@ -1,3 +1,11 @@
+/*STATS*/
+
+#pcStats {
+    gap: 20px;
+}
+
+/*MAP*/
+
 #viewport {
     display: flex;
     justify-content: center;
