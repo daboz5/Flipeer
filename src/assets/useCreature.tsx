@@ -3,7 +3,7 @@ import useAppStore from "../useAppStore";
 
 export default function useCreature() {
 
-    const { tileSize, mapData, setMapData } = useAppStore();
+    const { squareSize, squareMapData, setSquareMapData } = useAppStore();
 
     const createCreature = (data: Creature) => {
         const body = data.size.map((l) => {
@@ -23,10 +23,10 @@ export default function useCreature() {
 
     const eventListenerMove = (event: KeyboardEvent) => {
         const key = event.key;
-        if (!mapData) { return }
+        if (!squareMapData) { return }
         if (key === "ArrowUp" || key === "ArrowDown" || key === "ArrowLeft" || key === "ArrowRight") {
             let pcCoor = { x: 0, y: 0 };
-            mapData.forEach(
+            squareMapData.forEach(
                 (x) => x.forEach(
                     (y) => {
                         if (y.creature?.id === "player") {
@@ -36,31 +36,31 @@ export default function useCreature() {
                 )
             );
             if (key === "ArrowUp") {
-                if ((pcCoor.y + 1) < tileSize[1]) {
-                    mapData[pcCoor.y + 1][pcCoor.x].creature = { id: "player" };
-                    mapData[pcCoor.y][pcCoor.x].creature = null;
-                    setMapData(mapData);
+                if ((pcCoor.y + 1) < squareSize[1]) {
+                    squareMapData[pcCoor.y + 1][pcCoor.x].creature = { id: "player" };
+                    squareMapData[pcCoor.y][pcCoor.x].creature = null;
+                    setSquareMapData(squareMapData);
                 }
             }
             else if (key === "ArrowLeft") {
                 if ((pcCoor.x - 1) >= 0) {
-                    mapData[pcCoor.y][pcCoor.x].creature = null;
-                    mapData[pcCoor.y][pcCoor.x - 1].creature = { id: "player" };
-                    setMapData(mapData);
+                    squareMapData[pcCoor.y][pcCoor.x].creature = null;
+                    squareMapData[pcCoor.y][pcCoor.x - 1].creature = { id: "player" };
+                    setSquareMapData(squareMapData);
                 }
             }
             else if (key === "ArrowRight") {
-                if ((pcCoor.x + 1) < tileSize[0]) {
-                    mapData[pcCoor.y][pcCoor.x].creature = null;
-                    mapData[pcCoor.y][pcCoor.x + 1].creature = { id: "player" };
-                    setMapData(mapData);
+                if ((pcCoor.x + 1) < squareSize[0]) {
+                    squareMapData[pcCoor.y][pcCoor.x].creature = null;
+                    squareMapData[pcCoor.y][pcCoor.x + 1].creature = { id: "player" };
+                    setSquareMapData(squareMapData);
                 }
             }
             else if (key === "ArrowDown") {
                 if ((pcCoor.y - 1) >= 0) {
-                    mapData[pcCoor.y][pcCoor.x].creature = null;
-                    mapData[pcCoor.y - 1][pcCoor.x].creature = { id: "player" };
-                    setMapData(mapData);
+                    squareMapData[pcCoor.y][pcCoor.x].creature = null;
+                    squareMapData[pcCoor.y - 1][pcCoor.x].creature = { id: "player" };
+                    setSquareMapData(squareMapData);
                 }
             }
         }
