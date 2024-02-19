@@ -2,7 +2,6 @@ import toast from "react-hot-toast";
 import { SquareMapData, HexMapData, TileData, TileType } from "../type";
 import useAppStore from "../useAppStore";
 import useCreature from "./useCreature";
-import { useEffect } from "preact/hooks";
 
 export default function useMap() {
 
@@ -11,16 +10,8 @@ export default function useMap() {
         hexNums,
         setSquareSize,
         setHexNums,
-        setHexMapData,
-        setSquareMapData
     } = useAppStore();
     const { createCreature } = useCreature();
-
-    useEffect(() => {
-        let newData = createHexData(hexNums[0]);
-        setSquareMapData(null);
-        setHexMapData(newData);
-    }, [hexNums])
 
     const setSquareMapSize = (data: any) => {
         if (data) {
@@ -257,6 +248,7 @@ export default function useMap() {
                 arr.push(div);
             }
         }
+        const hexMapBorder = 20;
         return (<div
             id="hexGrid"
             style={{
@@ -265,12 +257,12 @@ export default function useMap() {
                     (hexNums[1] * 1.73) +
                     ((hexNums[2] * hexNums[0]) +
                         (hexNums[0] * 15) * (hexNums[1] * 0.03))
-                ) + 5}px`,
+                ) + (hexMapBorder * 2)}px`,
                 top: `${(
                     (hexNums[0] * 1) *
                     (hexNums[1] * 1.8) *
                     (hexNums[2] * 1.1)
-                ) + 5}px`
+                ) + (hexMapBorder * 0.9)}px`
             }}>
             {arr}
         </div>)

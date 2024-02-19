@@ -6,20 +6,43 @@ import useMap from "../assets/useMap";
 import "../assets/Creature.css";
 import "../assets/Map.css";
 import "../assets/Menu.css";
+import "../assets/GameUI.css";
 
 export default function Game() {
 
-    const { player, squareMapData, hexMapData } = useAppStore();
+    const {
+        hexNums,
+        player,
+        squareMapData,
+        hexMapData,
+        setHexMapData,
+        setSquareMapData
+    } = useAppStore();
     const {
         eventListenerMove,
     } = useCreature();
-    const { createTile, createHexMap, setSquareMapSize, setHexMapSize } = useMap();
+    const {
+        createHexData,
+        createTile,
+        createHexMap,
+        setSquareMapSize,
+        setHexMapSize
+    } = useMap();
     const { newSquareGame, newHexGame } = useGame();
 
     useEffect(() => {
         document.addEventListener("keydown", eventListenerMove);
         return () => document.removeEventListener("keydown", eventListenerMove);
     }, [eventListenerMove]);
+
+    useEffect(() => {
+        if (squareMapData || hexMapData) {
+            let newData = createHexData(hexNums[0]);
+            setSquareMapData(null);
+            setHexMapData(newData);
+        }
+    }, [hexNums])
+
 
     return (<>
 
@@ -28,13 +51,36 @@ export default function Game() {
             {hexMapData ? createHexMap(hexMapData) : <></>}
         </div>
 
-        <div id="pcStats" class={"flex alignFlex"}>
-            <p>{player.hp} / {player.maxHp} Hp</p>
-            <p>{player.energy} / {player.maxEnergy} Energy</p>
-            <p>{player.attack} Atk</p>
-            <p>{player.defence} Def</p>
-            <p>Size {player.size}</p>
-        </div>
+        {squareMapData || hexMapData ?
+            <>
+                <div id="pcStats" class={"flex alignFlex"}>
+                    <p>
+                        {player.hp} / {player.maxHp} Hp
+                    </p>
+                    <p>
+                        {player.energy} / {player.maxEnergy} Energy
+                    </p>
+                    <p>
+                        {player.attack} Atk
+                    </p>
+                    <p>
+                        {player.defence} Def
+                    </p>
+                    <p>
+                        Size {player.size}
+                    </p>
+                </div>
+                <p>
+                    Za premikanje uporabi: <br />
+                    <b>
+                        {squareMapData ?
+                            "⬆️⬇️⬅️➡️" :
+                            "Q E A D Y X"}
+                    </b>
+                </p>
+            </> :
+            <></>
+        }
 
         <div id="menu" class={"colFlex"}>
             <button
@@ -106,6 +152,7 @@ export default function Game() {
                     </input>
                 </label>
             </form>
+            <p>* Work in progress</p>
         </div>
 
     </>)
