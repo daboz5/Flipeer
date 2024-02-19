@@ -15,11 +15,13 @@ export default function useGame() {
         ]
         let newData = createTileData(squareSize);
         newData[mid[0]][mid[1]].creature = { id: "player" };
+        setHexMapData(null);
         setSquareMapData(newData);
     };
 
     const newHexGame = () => {
         let newData = createHexData(hexSize);
+        setSquareMapData(null);
         setHexMapData(newData);
     };
 

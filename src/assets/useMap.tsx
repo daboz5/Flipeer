@@ -212,7 +212,7 @@ export default function useMap() {
             const yH = coor.y;
             const zH = coor.z;
             if (zH !== undefined) {
-                const size = 20;
+                const size = 30;
                 const offset = size * 1;
                 const x = ((offset * 1.73) * xH) + ((offset * 1.73) * yH);
                 const y = ((offset * 2) * yH) + (offset * zH);
@@ -238,8 +238,8 @@ export default function useMap() {
         return (<div
             id="hexGrid"
             style={{
-                minHeight: `${hexSize * 90}px`,
-                top: `${hexSize * 40}px`
+                minHeight: `${hexSize * 145}px`,
+                top: `${hexSize * 65}px`
             }}>
             {arr}
         </div>)
