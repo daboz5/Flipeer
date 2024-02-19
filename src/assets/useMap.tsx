@@ -2,11 +2,25 @@ import toast from "react-hot-toast";
 import { SquareMapData, HexMapData, TileData, TileType } from "../type";
 import useAppStore from "../useAppStore";
 import useCreature from "./useCreature";
+import { useEffect } from "preact/hooks";
 
 export default function useMap() {
 
-    const { player, hexSize, setSquareSize, setHexSize } = useAppStore();
+    const {
+        player,
+        hexNums,
+        setSquareSize,
+        setHexNums,
+        setHexMapData,
+        setSquareMapData
+    } = useAppStore();
     const { createCreature } = useCreature();
+
+    useEffect(() => {
+        let newData = createHexData(hexNums[0]);
+        setSquareMapData(null);
+        setHexMapData(newData);
+    }, [hexNums])
 
     const setSquareMapSize = (data: any) => {
         if (data) {
@@ -25,12 +39,20 @@ export default function useMap() {
 
     const setHexMapSize = (data: any) => {
         if (data) {
-            const els: HTMLInputElement = data[1];
-            const size: number = Number(els.value);
+            const els: [HTMLInputElement, HTMLInputElement, HTMLInputElement] = [data[1], data[2], data[3]];
+            const nums: [number, number, number] = [Number(els[0].value), Number(els[1].value), Number(els[2].value)];
             const screenSize = [window.innerWidth, window.innerHeight];
-            const screenMax = size * 80;
-            if (screenMax <= screenSize[0] && screenMax <= screenSize[1]) {
-                setHexSize(size);
+            const screenTake = (
+                ((nums[0] ? nums[0] : hexNums[0]) * 2) *
+                ((nums[1] ? nums[1] : hexNums[1]) * 2) *
+                ((nums[2] ? nums[2] : hexNums[2]) * 1.1)
+            );
+            if (screenTake <= screenSize[0] && screenTake <= screenSize[1]) {
+                setHexNums([
+                    nums[0] ? nums[0] : hexNums[0],
+                    nums[1] ? nums[1] : hexNums[1],
+                    nums[2] ? nums[2] : hexNums[2]
+                ]);
                 toast.success("Size of next map was changed.")
             } else {
                 toast.error("This map would be too large for your screen.")
@@ -212,8 +234,8 @@ export default function useMap() {
             const yH = coor.y;
             const zH = coor.z;
             if (zH !== undefined) {
-                const size = 30;
-                const offset = size * 1;
+                const size = hexNums[1];
+                const offset = size * hexNums[2];
                 const x = ((offset * 1.73) * xH) + ((offset * 1.73) * yH);
                 const y = ((offset * 2) * yH) + (offset * zH);
                 const div = <>
@@ -238,8 +260,17 @@ export default function useMap() {
         return (<div
             id="hexGrid"
             style={{
-                minHeight: `${hexSize * 145}px`,
-                top: `${hexSize * 65}px`
+                minHeight: `${(
+                    ((hexNums[0] * 2) + 1) *
+                    (hexNums[1] * 1.73) +
+                    ((hexNums[2] * hexNums[0]) +
+                        (hexNums[0] * 15) * (hexNums[1] * 0.03))
+                ) + 5}px`,
+                top: `${(
+                    (hexNums[0] * 1) *
+                    (hexNums[1] * 1.8) *
+                    (hexNums[2] * 1.1)
+                ) + 5}px`
             }}>
             {arr}
         </div>)

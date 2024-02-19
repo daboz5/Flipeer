@@ -12,6 +12,10 @@
     padding: 0.5rem 0.8rem;
 }
 
+button p {
+    margin: 0;
+}
+
 #menu input {
     margin: 7px 3px 0;
     font-size: 1.1rem;

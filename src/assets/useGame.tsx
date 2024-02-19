@@ -4,7 +4,7 @@ import useMap from "./useMap";
 
 export default function useGame() {
 
-    const { squareSize, hexSize, setSquareMapData, setHexMapData } = useAppStore();
+    const { squareSize, hexNums, setSquareMapData, setHexMapData } = useAppStore();
     const { createTileData, createHexData } = useMap();
 
 
@@ -20,7 +20,7 @@ export default function useGame() {
     };
 
     const newHexGame = () => {
-        let newData = createHexData(hexSize);
+        let newData = createHexData(hexNums[0]);
         setSquareMapData(null);
         setHexMapData(newData);
     };

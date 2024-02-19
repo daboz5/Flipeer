@@ -85,14 +85,24 @@ export default function Game() {
                 <button
                     for="hexCngSize"
                     type={"submit"}>
-                    Change Hex Size
+                    <p>Change Hex<br />Number / Size / Space</p>
                 </button>
                 <label>
                     <input
                         type={"number"}
-                        id="hexInput"
-                        placeholder={"r"}
-                        required>
+                        id="hexNumInput"
+                        placeholder={"num"}>
+                    </input>
+                    <input
+                        type={"number"}
+                        id="hexSizeInput"
+                        placeholder={"size"}>
+                    </input>
+                    <input
+                        type={"number"}
+                        step=".1"
+                        id="hexSpaceInput"
+                        placeholder={"space"}>
                     </input>
                 </label>
             </form>

@@ -4,14 +4,14 @@ import { Creature, SquareMapData, HexMapData } from './type';
 type State = {
     player: Creature;
     squareSize: [number, number];
-    hexSize: number;
+    hexNums: [number, number, number];
     squareMapData: SquareMapData | null;
     hexMapData: HexMapData | null;
 }
 
 type Action = {
     setSquareSize(newSize: [number, number]): void,
-    setHexSize(newSize: number): void,
+    setHexNums(newNums: [number, number, number]): void,
     setSquareMapData(newMapData: SquareMapData | null): void,
     setHexMapData(newMapData: HexMapData | null): void,
     setPCData(newPCData: Creature): void,
@@ -20,12 +20,13 @@ type Action = {
 const useAppStore = create<State & Action>((set) => ({
 
     squareSize: [10, 10],
-    hexSize: 3,
     setSquareSize: (newSize) => set(() => ({
         squareSize: newSize
     })),
-    setHexSize: (newSize) => set(() => ({
-        hexSize: newSize
+
+    hexNums: [2, 30, 1],
+    setHexNums: (newSize) => set(() => ({
+        hexNums: newSize
     })),
 
     player: {
