@@ -2,6 +2,8 @@
     height: 100%;
 }
 
+/*SQUARE MAP*/
+
 .tile {
     top: 0;
     left: 0;
@@ -22,4 +24,43 @@
     align-items: center;
     width: 38px;
     border: 1px dotted grey;
+}
+
+/*HEX MAP*/
+
+#hexGrid {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.hex {
+    position: absolute;
+    background-color: blue;
+}
+
+.hex:before,
+.hex:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: inherit;
+    width: inherit;
+    background-color: blue;
+}
+
+.hex:before {
+    transform: rotate(60deg);
+}
+
+.hex:after {
+    transform: rotate(-60deg);
+}
+
+.cor {
+    position: absolute;
+    font-size: 0.7rem;
+    margin: 10px 0;
+    z-index: 3;
 }

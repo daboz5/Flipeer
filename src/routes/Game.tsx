@@ -9,12 +9,12 @@ import "../assets/Menu.css";
 
 export default function Game() {
 
-    const { player, mapData } = useAppStore();
+    const { player, squareMapData, hexMapData } = useAppStore();
     const {
         eventListenerMove,
     } = useCreature();
-    const { createTile } = useMap();
-    const { newGame, setMapSize } = useGame();
+    const { createTile, createHexMap, setSquareMapSize, setHexMapSize } = useMap();
+    const { newSquareGame, newHexGame } = useGame();
 
     useEffect(() => {
         document.addEventListener("keydown", eventListenerMove);
@@ -24,12 +24,13 @@ export default function Game() {
     return (<>
 
         <div id="viewport">
-            {mapData ? createTile(mapData) : <></>}
+            {squareMapData ? createTile(squareMapData) : <></>}
+            {hexMapData ? createHexMap(hexMapData) : <></>}
         </div>
 
         <div id="pcStats" class={"flex alignFlex"}>
             <p>{player.hp} / {player.maxHp} Hp</p>
-            <p>{player.energy} Energy</p>
+            <p>{player.energy} / {player.maxEnergy} Energy</p>
             <p>{player.attack} Atk</p>
             <p>{player.defence} Def</p>
             <p>Size {player.size}</p>
@@ -37,20 +38,26 @@ export default function Game() {
 
         <div id="menu" class={"colFlex"}>
             <button
-                onClick={() => newGame()}>
-                New Game
+                onClick={() => newSquareGame()}>
+                New Square Map
             </button>
+
+            <button
+                onClick={() => newHexGame()}>
+                New Hex Map
+            </button>
+
             <form
-                id="menuCngSize"
+                id="squareCngSize"
                 class={"colFlex alignFlex"}
                 onSubmit={(e) => {
                     e.preventDefault();
-                    setMapSize(e.target);
+                    setSquareMapSize(e.target);
                 }}>
                 <button
-                    for="menuCngSize"
+                    for="squareCngSize"
                     type={"submit"}>
-                    Change Size
+                    Change Square Size
                 </button>
                 <label>
                     <input
@@ -63,6 +70,28 @@ export default function Game() {
                         type={"number"}
                         id="yInput"
                         placeholder={"y"}
+                        required>
+                    </input>
+                </label>
+            </form>
+
+            <form
+                id="hexCngSize"
+                class={"colFlex alignFlex"}
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    setHexMapSize(e.target);
+                }}>
+                <button
+                    for="hexCngSize"
+                    type={"submit"}>
+                    Change Hex Size
+                </button>
+                <label>
+                    <input
+                        type={"number"}
+                        id="hexInput"
+                        placeholder={"r"}
                         required>
                     </input>
                 </label>

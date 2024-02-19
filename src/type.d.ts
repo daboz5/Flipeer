@@ -1,7 +1,7 @@
 type TileType = "sea" | "vulcano";
 
 type TileData = {
-    coor: { x: number, y: number };
+    coor: { x: number, y: number, z: number | undefined };
     creature: Creature | { id: "player" } | null;
     type: TileType;
     context: {
@@ -10,7 +10,8 @@ type TileData = {
     }
 };
 
-type MapData = TileData[][];
+type SquareMapData = TileData[][];
+type HexMapData = TileData[];
 
 type Creature = {
     id: number;
@@ -30,6 +31,7 @@ type Creature = {
 export {
     TileType,
     TileData,
-    MapData,
+    SquareMapData,
+    HexMapData,
     Creature
 }

@@ -1,22 +1,31 @@
 import { create } from 'zustand';
-import { Creature, MapData } from './type';
+import { Creature, SquareMapData, HexMapData } from './type';
 
 type State = {
     player: Creature;
-    tileSize: [number, number];
-    mapData: MapData | null;
+    squareSize: [number, number];
+    hexSize: number;
+    squareMapData: SquareMapData | null;
+    hexMapData: HexMapData | null;
 }
 
 type Action = {
-    setTileSize(newSize: [number, number]): void
-    setMapData(newMapData: MapData | null): void,
+    setSquareSize(newSize: [number, number]): void,
+    setHexSize(newSize: number): void,
+    setSquareMapData(newMapData: SquareMapData | null): void,
+    setHexMapData(newMapData: HexMapData | null): void,
     setPCData(newPCData: Creature): void,
 }
 
 const useAppStore = create<State & Action>((set) => ({
-    tileSize: [10, 10],
-    setTileSize: (newSize) => set(() => ({
-        tileSize: newSize
+
+    squareSize: [10, 10],
+    hexSize: 3,
+    setSquareSize: (newSize) => set(() => ({
+        squareSize: newSize
+    })),
+    setHexSize: (newSize) => set(() => ({
+        hexSize: newSize
     })),
 
     player: {
@@ -37,9 +46,13 @@ const useAppStore = create<State & Action>((set) => ({
         player: newPCData
     })),
 
-    mapData: null,
-    setMapData: (newMapData) => set(() => ({
-        mapData: newMapData
+    squareMapData: null,
+    hexMapData: null,
+    setSquareMapData: (newMapData) => set(() => ({
+        squareMapData: newMapData
+    })),
+    setHexMapData: (newMapData) => set(() => ({
+        hexMapData: newMapData
     }))
 }));
 
