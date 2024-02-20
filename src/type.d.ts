@@ -1,7 +1,17 @@
 type TileType = "sea" | "vulcano";
 
 type TileData = {
-    coor: { x: number, y: number, z: number | undefined };
+    coor: { x: number, y: number };
+    creature: Creature | { id: "player" } | null;
+    type: TileType;
+    context: {
+        tiles: TileType[];
+        border: boolean;
+    }
+};
+
+type HexTileData = {
+    coor: { x: number, y: number, z: number };
     creature: Creature | { id: "player" } | null;
     type: TileType;
     context: {
@@ -11,7 +21,7 @@ type TileData = {
 };
 
 type SquareMapData = TileData[][];
-type HexMapData = TileData[];
+type HexMapData = HexTileData[];
 
 type Creature = {
     id: number;
@@ -31,6 +41,7 @@ type Creature = {
 export {
     TileType,
     TileData,
+    HexTileData,
     SquareMapData,
     HexMapData,
     Creature

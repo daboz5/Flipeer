@@ -1,5 +1,5 @@
 import toast from "react-hot-toast";
-import { SquareMapData, HexMapData, TileData, TileType } from "../type";
+import { SquareMapData, HexMapData, TileData, TileType, HexTileData } from "../type";
 import useAppStore from "../useAppStore";
 import useCreature from "./useCreature";
 
@@ -65,9 +65,22 @@ export default function useMap() {
         }
     }
 
-    const getTile = (x: number, y: number, z?: number) => {
+    const getTile = (x: number, y: number) => {
         let tile: TileData = {
-            coor: { x: x, y: y, z: typeof z === "number" ? z : undefined },
+            coor: { x: x, y: y },
+            creature: null,
+            type: getTileType(),
+            context: {
+                tiles: [],
+                border: false
+            }
+        }
+        return tile;
+    }
+
+    const getHexTile = (x: number, y: number, z: number) => {
+        let tile: HexTileData = {
+            coor: { x: x, y: y, z: z },
             creature: null,
             type: getTileType(),
             context: {
@@ -191,7 +204,7 @@ export default function useMap() {
     /*HEX MAP FUNCTIONS*/
 
     const createHexData = (size: number) => {
-        const hexes: TileData[] = [];
+        const hexes: HexTileData[] = [];
         for (let x = -size; x <= size; x++) {
             for (let y = -size; y <= size; y++) {
                 for (let z = -size; z <= size; z++) {
@@ -207,14 +220,15 @@ export default function useMap() {
                         ) {
                             border = true; // ozavesti rob plošče
                         }
-                        const tile = getTile(x, y, z);
+                        const tile = getHexTile(x, y, z);
                         tile.context.border = border;
                         hexes.push(tile);
                     }
                 }
             }
         }
-        return hexes;
+        const final = informHexData(hexes);
+        return final;
     }
 
     const createHexMap = (data: HexMapData) => {
@@ -224,30 +238,42 @@ export default function useMap() {
             const xH = coor.x;
             const yH = coor.y;
             const zH = coor.z;
+
             if (zH !== undefined) {
                 const size = hexNums[1];
                 const offset = size * hexNums[2];
                 const x = ((offset * 1.73) * xH) + ((offset * 1.73) * yH);
                 const y = ((offset * 2) * yH) + (offset * zH);
+                let backgrond = data[i].type === "vulcano" ?
+                    "red" :
+                    data[i].context.tiles.includes("vulcano") ?
+                        "orange" :
+                        "blue";
+                data[i].creature?.id === "player" ? backgrond = "pink" : "";
+
                 const div = <>
                     <div
                         class="hex"
                         style={{
                             transform: `translate(${x}px, ${y}px)`,
                             height: `${size * 1.73}px`,
-                            width: `${size}px`
+                            width: `${size}px`,
+                            backgroundColor: backgrond
                         }}>
                         <p class={"cor"}>
-                            {/* {coor.x},
+                            {coor.x},
                             {coor.y},
-                            {coor.z} */}
+                            {coor.z} <br />
+                            {i}
                             {/* {data[i].context.border ? "yup" : "no"} */}
                         </p>
                     </div>
                 </>
+
                 arr.push(div);
             }
         }
+
         const hexMapBorder = 20;
         return (<div
             id="hexGrid"
@@ -266,6 +292,41 @@ export default function useMap() {
             }}>
             {arr}
         </div>)
+    }
+
+    const informHexData = (hex: HexTileData[]) => {
+        for (let i = 0; i < hex.length; i++) {
+            const coor = hex[i].coor;
+            let tileContext: TileType[] = [];
+            tileContext = informOneHexSpace(coor, hex);
+            hex[i].context.tiles = tileContext;
+        }
+        return hex;
+    }
+
+    const informOneHexSpace = (
+        { x, y, z }: { x: number, y: number, z: number },
+        hexes: HexTileData[]
+    ) => {
+        const positions = [
+            { x: x + 1, y: y - 1, z: z },
+            { x: x - 1, y: y + 1, z: z },
+            { x: x, y: y + 1, z: z - 1 },
+            { x: x, y: y - 1, z: z + 1 },
+            { x: x + 1, y: y, z: z - 1 },
+            { x: x - 1, y: y, z: z + 1 },
+        ]
+        let tileTypes: TileType[] = [];
+        for (let i = 0; i < positions.length; i++) {
+            const neighbour = hexes.find((e) =>
+                e.coor.x === positions[i].x &&
+                e.coor.y === positions[i].y &&
+                e.coor.z === positions[i].z
+            )
+            const type = neighbour?.type;
+            type ? tileTypes.push(type) : "";
+        }
+        return tileTypes;
     }
 
     return {

@@ -21,6 +21,7 @@ export default function useGame() {
 
     const newHexGame = () => {
         let newData = createHexData(hexNums[0]);
+        newData[Math.floor(newData.length / 2)].creature = { id: "player" };
         setSquareMapData(null);
         setHexMapData(newData);
     };

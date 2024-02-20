@@ -19,7 +19,8 @@ export default function Game() {
         setSquareMapData
     } = useAppStore();
     const {
-        eventListenerMove,
+        eventListenerSquareMove,
+        eventListenerHexMove,
     } = useCreature();
     const {
         createHexData,
@@ -31,13 +32,21 @@ export default function Game() {
     const { newSquareGame, newHexGame } = useGame();
 
     useEffect(() => {
-        document.addEventListener("keydown", eventListenerMove);
-        return () => document.removeEventListener("keydown", eventListenerMove);
-    }, [eventListenerMove]);
+        if (squareMapData) {
+            document.addEventListener("keydown", eventListenerSquareMove);
+        } else if (hexMapData) {
+            document.addEventListener("keydown", eventListenerHexMove);
+        }
+        return () => {
+            document.removeEventListener("keydown", eventListenerSquareMove);
+            document.removeEventListener("keydown", eventListenerHexMove);
+        }
+    }, [eventListenerSquareMove, eventListenerHexMove]);
 
     useEffect(() => {
         if (squareMapData || hexMapData) {
             let newData = createHexData(hexNums[0]);
+            newData[Math.floor(newData.length / 2)].creature = { id: "player" };
             setSquareMapData(null);
             setHexMapData(newData);
         }
@@ -75,7 +84,7 @@ export default function Game() {
                     <b>
                         {squareMapData ?
                             "⬆️⬇️⬅️➡️" :
-                            "Q E A D Y X"}
+                            "Q W E A S D"}
                     </b>
                 </p>
             </> :
