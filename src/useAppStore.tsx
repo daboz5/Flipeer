@@ -1,59 +1,60 @@
 import { create } from 'zustand';
-import { Creature, SquareMapData, HexMapData } from './type';
+import { Creature, MapData } from './type';
 
 type State = {
     player: Creature;
-    squareSize: [number, number];
-    hexNums: [number, number, number];
-    squareMapData: SquareMapData | null;
-    hexMapData: HexMapData | null;
+    mapNums: [number, number, number];
+    mapData: MapData | null;
 }
 
 type Action = {
-    setSquareSize(newSize: [number, number]): void,
-    setHexNums(newNums: [number, number, number]): void,
-    setSquareMapData(newMapData: SquareMapData | null): void,
-    setHexMapData(newMapData: HexMapData | null): void,
+    setMapNums(newNums: [number, number, number]): void,
+    setMapData(newMapData: MapData | null): void,
     setPCData(newPCData: Creature): void,
 }
 
 const useAppStore = create<State & Action>((set) => ({
-
-    squareSize: [10, 10],
-    setSquareSize: (newSize) => set(() => ({
-        squareSize: newSize
-    })),
-
-    hexNums: [2, 30, 1],
-    setHexNums: (newSize) => set(() => ({
-        hexNums: newSize
+    mapNums: [3, 30, 1],
+    setMapNums: (newSize) => set(() => ({
+        mapNums: newSize
     })),
 
     player: {
         id: 0,
-        hp: 5,
-        maxHp: 5,
-        attack: 0,
-        defence: 0,
-        energy: 3,
-        maxEnergy: 3,
-        sense: { fo: 1, si: 1, ba: 1 },
-        move: { fo: 1, si: 1, ba: 1 },
-        size: [1],
-        resistence: [],
-        color: "pink"
+        orientation: "F",
+        general: {
+            health: {
+                hp: 5,
+                hpMax: 5,
+            },
+            temperature: [{ scale: 2, description: "hot" }],
+            attack: 0,
+            defence: 0,
+            food: {
+                energy: 3,
+                energyMax: 3,
+                storage: 0,
+                storageMax: 0,
+                energySourse: [],
+            },
+            movement: [],
+            resistences: [],
+        },
+        body: {
+            bodySize: 1,
+            bodySizeMax: 2,
+            segmentation: [],
+            color: "pink"
+        },
+
     },
     setPCData: (newPCData) => set(() => ({
         player: newPCData
     })),
 
-    squareMapData: null,
-    hexMapData: null,
-    setSquareMapData: (newMapData) => set(() => ({
-        squareMapData: newMapData
-    })),
-    setHexMapData: (newMapData) => set(() => ({
-        hexMapData: newMapData
+    mapData: null,
+    setMapData: (newMapData) => set(() => ({
+        mapData: newMapData
     }))
 }));
 

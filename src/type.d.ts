@@ -1,48 +1,118 @@
-type TileType = "sea" | "vulcano";
+/*MAP*/
+
+type TileType = "sea" | "atVulcano" | "vulcano";
+
+
+type Temperatures = {
+    scale: -3;
+    description: "absolute";
+} | {
+    scale: -2;
+    description: "freezing";
+} | {
+    scale: -1;
+    description: "cold";
+} | {
+    scale: 0;
+    description: "average";
+} | {
+    scale: 1;
+    description: "warm";
+} | {
+    scale: 2;
+    description: "hot";
+} | {
+    scale: 3;
+    description: "melting";
+} | {
+    scale: 4;
+    description: "hell";
+}
+
+type Resource = {
+    type: string;
+    amount: number;
+}
 
 type TileData = {
-    coor: { x: number, y: number };
-    creature: Creature | { id: "player" } | null;
     type: TileType;
-    context: {
-        tiles: TileType[];
-        border: boolean;
+    values: {
+        temperature: Temperatures;
+        resources: Resource[];
     }
-};
+}
 
-type HexTileData = {
+type Tile = {
     coor: { x: number, y: number, z: number };
     creature: Creature | { id: "player" } | null;
-    type: TileType;
+    terrain: TileData;
     context: {
         tiles: TileType[];
         border: boolean;
     }
 };
 
-type SquareMapData = TileData[][];
-type HexMapData = HexTileData[];
+type MapData = HexTileData[];
+
+/*CREATURE*/
+
+type Segment = {} | {
+    attack: number;
+    defence: number;
+    resistences: Resistence[];
+    quirks: string[];
+}
+
+type Resistence = {
+    type: string;
+    effect: number;
+}
+
+type Movement = {
+    type: string;
+    drain: number;
+}
+
+type EnergySource = {
+    type: string;
+    metabolicRate: number;
+}
+
+type Orientation = "FL" | "F" | "FR" | "BL" | "B" | "BR";
 
 type Creature = {
     id: number;
-    hp: number;
-    maxHp: number;
-    attack: number;
-    defence: number;
-    energy: number;
-    maxEnergy: number;
-    sense: { fo: number, si: number, ba: number };
-    move: { fo: number, si: number, ba: number };
-    size: number[];
-    resistence: string[];
-    color: string;
+    orientation: Orientation;
+    general: {
+        health: {
+            hp: number;
+            hpMax: number;
+        };
+        temperature: Temperatures[];
+        attack: number;
+        defence: number;
+        food: {
+            energy: number;
+            energyMax: number;
+            storage: number;
+            storageMax: number;
+            energySourse: EnergySource[];
+        };
+        movement: Movement[];
+        resistences: Resistence[];
+    };
+    body: {
+        bodySize: number;
+        bodySizeMax: number;
+        segmentation: Segment[];
+        color: string;
+    };
 }
 
 export {
     TileType,
     TileData,
-    HexTileData,
-    SquareMapData,
-    HexMapData,
+    Tile,
+    MapData,
     Creature
 }

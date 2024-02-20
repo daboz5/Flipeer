@@ -4,30 +4,16 @@ import useMap from "./useMap";
 
 export default function useGame() {
 
-    const { squareSize, hexNums, setSquareMapData, setHexMapData } = useAppStore();
-    const { createTileData, createHexData } = useMap();
-
-
-    const newSquareGame = () => {
-        let mid: [number, number] = [
-            Math.floor(squareSize[1] / 2),
-            Math.floor(squareSize[0] / 2)
-        ]
-        let newData = createTileData(squareSize);
-        newData[mid[0]][mid[1]].creature = { id: "player" };
-        setHexMapData(null);
-        setSquareMapData(newData);
-    };
+    const { mapNums, setMapData } = useAppStore();
+    const { createMapData } = useMap();
 
     const newHexGame = () => {
-        let newData = createHexData(hexNums[0]);
+        let newData = createMapData(mapNums[0]);
         newData[Math.floor(newData.length / 2)].creature = { id: "player" };
-        setSquareMapData(null);
-        setHexMapData(newData);
+        setMapData(newData);
     };
 
     return {
-        newSquareGame,
         newHexGame
     }
 }

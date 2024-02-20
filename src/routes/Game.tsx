@@ -11,80 +11,68 @@ import "../assets/GameUI.css";
 export default function Game() {
 
     const {
-        hexNums,
+        mapNums,
         player,
-        squareMapData,
-        hexMapData,
-        setHexMapData,
-        setSquareMapData
+        mapData,
+        setMapData,
     } = useAppStore();
     const {
-        eventListenerSquareMove,
-        eventListenerHexMove,
+        eventListenerMove,
     } = useCreature();
     const {
-        createHexData,
-        createTile,
-        createHexMap,
-        setSquareMapSize,
-        setHexMapSize
+        createMapData,
+        createMap,
+        setMapSize
     } = useMap();
-    const { newSquareGame, newHexGame } = useGame();
+    const { newHexGame } = useGame();
 
     useEffect(() => {
-        if (squareMapData) {
-            document.addEventListener("keydown", eventListenerSquareMove);
-        } else if (hexMapData) {
-            document.addEventListener("keydown", eventListenerHexMove);
+        if (mapData) {
+            document.addEventListener("keydown", eventListenerMove);
         }
         return () => {
-            document.removeEventListener("keydown", eventListenerSquareMove);
-            document.removeEventListener("keydown", eventListenerHexMove);
+            document.removeEventListener("keydown", eventListenerMove);
         }
-    }, [eventListenerSquareMove, eventListenerHexMove]);
+    }, [eventListenerMove]);
 
     useEffect(() => {
-        if (squareMapData || hexMapData) {
-            let newData = createHexData(hexNums[0]);
+        if (mapData) {
+            let newData = createMapData(mapNums[0]);
             newData[Math.floor(newData.length / 2)].creature = { id: "player" };
-            setSquareMapData(null);
-            setHexMapData(newData);
+            setMapData(newData);
         }
-    }, [hexNums])
+    }, [mapNums])
 
 
     return (<>
 
         <div id="viewport">
-            {squareMapData ? createTile(squareMapData) : <></>}
-            {hexMapData ? createHexMap(hexMapData) : <></>}
+            {mapData ? createMap(mapData) : <></>}
         </div>
 
-        {squareMapData || hexMapData ?
+        {mapData ?
             <>
                 <div id="pcStats" class={"flex alignFlex"}>
                     <p>
-                        {player.hp} / {player.maxHp} Hp
+                        {player.general.health.hp} / {player.general.health.hpMax} Hp
                     </p>
                     <p>
-                        {player.energy} / {player.maxEnergy} Energy
+                        {player.general.food.energy} / {player.general.food.energyMax} Energy
                     </p>
                     <p>
-                        {player.attack} Atk
+                        {player.general.attack} Atk
                     </p>
                     <p>
-                        {player.defence} Def
+                        {player.general.defence} Def
                     </p>
                     <p>
-                        Size {player.size}
+                        Size {player.body.bodySize}
                     </p>
                 </div>
                 <p>
                     Za premikanje uporabi: <br />
                     <b>
-                        {squareMapData ?
-                            "⬆️⬇️⬅️➡️" :
-                            "Q W E A S D"}
+                        {mapData && "Q W E A S D"}
                     </b>
                 </p>
             </> :
@@ -92,10 +80,6 @@ export default function Game() {
         }
 
         <div id="menu" class={"colFlex"}>
-            <button
-                onClick={() => newSquareGame()}>
-                New Square Map
-            </button>
 
             <button
                 onClick={() => newHexGame()}>
@@ -103,39 +87,11 @@ export default function Game() {
             </button>
 
             <form
-                id="squareCngSize"
-                class={"colFlex alignFlex"}
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    setSquareMapSize(e.target);
-                }}>
-                <button
-                    for="squareCngSize"
-                    type={"submit"}>
-                    Change Square Size
-                </button>
-                <label>
-                    <input
-                        type={"number"}
-                        id="xInput"
-                        placeholder={"x"}
-                        required>
-                    </input>
-                    <input
-                        type={"number"}
-                        id="yInput"
-                        placeholder={"y"}
-                        required>
-                    </input>
-                </label>
-            </form>
-
-            <form
                 id="hexCngSize"
                 class={"colFlex alignFlex"}
                 onSubmit={(e) => {
                     e.preventDefault();
-                    setHexMapSize(e.target);
+                    setMapSize(e.target);
                 }}>
                 <button
                     for="hexCngSize"
@@ -161,7 +117,9 @@ export default function Game() {
                     </input>
                 </label>
             </form>
+
             <p>* Work in progress</p>
+
         </div>
 
     </>)
