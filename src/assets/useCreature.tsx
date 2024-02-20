@@ -1,4 +1,4 @@
-import { Creature, HexTileData } from "../type";
+import { Creature } from "../type";
 import useAppStore from "../useAppStore";
 
 export default function useCreature() {
