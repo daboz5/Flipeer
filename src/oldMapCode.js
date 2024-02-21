@@ -205,3 +205,26 @@ type TileData = {
 };
 
 type SquareMapData = TileData[][];
+
+/*SQUARE MAP*/
+
+.tile {
+    display: flex;
+    flex - direction: column;
+    justify - content: center;
+    align - items: center;
+    margin: 20px 5px;
+}
+
+.rowTile {
+    display: flex;
+    height: 40px;
+}
+
+.colTile {
+    display: flex;
+    justify - content: center;
+    align - items: center;
+    width: 38px;
+    border: 1px dotted grey;
+}

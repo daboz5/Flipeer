@@ -7,13 +7,13 @@ export default function useGame() {
     const { mapNums, setMapData } = useAppStore();
     const { createMapData } = useMap();
 
-    const newHexGame = () => {
-        let newData = createMapData(mapNums[0]);
+    const newGame = () => {
+        let newData = createMapData(mapNums.mapSize);
         newData[Math.floor(newData.length / 2)].creature = { id: "player" };
         setMapData(newData);
     };
 
     return {
-        newHexGame
+        newGame
     }
 }

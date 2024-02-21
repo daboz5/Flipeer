@@ -1,27 +1,31 @@
 import { create } from 'zustand';
-import { Creature, MapData } from './type';
+import { Creature, Tile, MapNumbers } from './type';
 
 type State = {
     player: Creature;
-    mapNums: [number, number, number];
-    mapData: MapData | null;
+    mapNums: MapNumbers;
+    mapData: Tile[] | null;
 }
 
 type Action = {
-    setMapNums(newNums: [number, number, number]): void,
-    setMapData(newMapData: MapData | null): void,
+    setMapNums(newNums: MapNumbers): void,
+    setMapData(newMapData: Tile[] | null): void,
     setPCData(newPCData: Creature): void,
 }
 
 const useAppStore = create<State & Action>((set) => ({
-    mapNums: [3, 30, 1],
+    mapNums: {
+        mapSize: 3,
+        tileSize: 30,
+        tileSpacing: 1
+    },
     setMapNums: (newSize) => set(() => ({
         mapNums: newSize
     })),
 
     player: {
         id: 0,
-        orientation: "F",
+        orientation: 0,
         general: {
             health: {
                 hp: 5,

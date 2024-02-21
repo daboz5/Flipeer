@@ -1,5 +1,5 @@
 import toast from "react-hot-toast";
-import { MapData, Tile, TileType, TileData } from "../type";
+import { Tile, TileType, TileData } from "../type";
 import useAppStore from "../useAppStore";
 
 export default function useMap() {
@@ -9,6 +9,12 @@ export default function useMap() {
         mapNums,
         setMapNums,
     } = useAppStore();
+
+    const {
+        mapSize: mapSize,
+        tileSize: tileSize,
+        tileSpacing: tileSpacing
+    } = mapNums;
 
     const tileTypes: TileData[] = [{
         type: "sea",
@@ -32,20 +38,22 @@ export default function useMap() {
 
     const setMapSize = (data: any) => {
         if (data) {
-            const els: [HTMLInputElement, HTMLInputElement, HTMLInputElement] = [data[1], data[2], data[3]];
-            const nums: [number, number, number] = [Number(els[0].value), Number(els[1].value), Number(els[2].value)];
-            const screenSize = [window.innerWidth, window.innerHeight];
+            const [el1, el2, el3]: [HTMLInputElement, HTMLInputElement, HTMLInputElement] = [data[1], data[2], data[3]];
+            const [num1, num2, num3] = [Number(el1.value), Number(el2.value), Number(el3.value)];
+            const newMapSize = num1 ? num1 : mapSize;
+            const newTileSize = num2 ? num2 : tileSize;
+            const newTileSpacing = num3 ? num3 : tileSpacing;
             const screenTake = (
-                ((nums[0] ? nums[0] : mapNums[0]) * 2) *
-                ((nums[1] ? nums[1] : mapNums[1]) * 2) *
-                ((nums[2] ? nums[2] : mapNums[2]) * 1.1)
+                (newMapSize * 2) *
+                (newTileSize * 2) *
+                (newTileSpacing * 1.1)
             );
-            if (screenTake <= screenSize[0] && screenTake <= screenSize[1]) {
-                setMapNums([
-                    nums[0] ? nums[0] : mapNums[0],
-                    nums[1] ? nums[1] : mapNums[1],
-                    nums[2] ? nums[2] : mapNums[2]
-                ]);
+            if (screenTake <= window.innerWidth && screenTake <= window.innerHeight) {
+                setMapNums({
+                    mapSize: newMapSize,
+                    tileSize: newTileSize,
+                    tileSpacing: newTileSpacing
+                });
                 toast.success("Size of next map was changed.")
             } else {
                 toast.error("This map would be too large for your screen.")
@@ -57,6 +65,8 @@ export default function useMap() {
         return Math.floor(Math.random() * max);
     }
 
+    /*FUNCTIONS FOR CREATING BASE DATA STRUCTURES*/
+
     const getTileType = () => {
         let tileData: TileData = tileTypes[0];
 
@@ -64,68 +74,64 @@ export default function useMap() {
         const num = getRandomInt(chanNum);
         if (num === (chanNum - 1)) {
             const querry = tileTypes.find((type) => type.type === "vulcano");
-            querry ? tileData = querry : "";
+            if (querry) { tileData = querry }
         }
 
         return tileData;
     }
 
-    const getTile = (x: number, y: number, z: number) => {
-        let tile: Tile = {
-            coor: { x: x, y: y, z: z },
-            creature: null,
-            terrain: getTileType(),
-            context: {
-                tiles: [],
-                border: false
-            }
-        }
-        return tile;
-    }
+    const createMapData = (radius: number) => {
 
-    const createMapData = (size: number) => {
         const hexes: Tile[] = [];
-        for (let x = -size; x <= size; x++) {
-            for (let y = -size; y <= size; y++) {
-                for (let z = -size; z <= size; z++) {
-                    if (x + y + z === 0) {
-                        const tile = getTile(x, y, z);
-                        if (
-                            x === (size) || x === (-size) ||
-                            y === (size) || y === (-size) ||
-                            z === (size) || z === (-size)
-                        ) { tile.context.border = true } // ozavesti rob plošče
-                        hexes.push(tile);
-                    }
+        for (let x = -radius; x <= radius; x++) {
+            for (let y = -radius; y <= radius; y++) {
+                let z = -x - y;
+                if (z >= -radius && z <= radius) {
+
+                    const tile: Tile = {
+                        coor: { x: x, y: y, z: z },
+                        creature: null,
+                        terrain: getTileType(),
+                        context: {
+                            tiles: [],
+                            border: false
+                        }
+                    };
+
+                    if (
+                        Math.abs(x) === radius ||
+                        Math.abs(y) === radius ||
+                        Math.abs(z) === radius
+                    ) { tile.context.border = true }
+
+                    hexes.push(tile);
                 }
             }
         }
+
         const final = informData(hexes);
         return final;
     }
 
-    const informData = (hex: Tile[]) => {
+    /*FUNCTIONS FOR CONTEXUAL DATA*/
+
+    const informData = (hexes: Tile[]) => {
         /*Kjer se pojavi igralec ni nevarno*/
-        const pcIndex = Math.floor(hex.length / 2);
-        hex[pcIndex].terrain = {
-            type: "sea",
-            values: {
-                temperature: { scale: 0, description: "average" },
-                resources: [{ type: "", amount: 0 }]
-            }
-        };
+        const pcIndex = Math.floor(hexes.length / 2);
+        const startTile = tileTypes.find(terrain => terrain.type === "sea")
+        hexes[pcIndex].terrain = startTile ? startTile : tileTypes[0];
 
         /*Ozavesti kaj se nahaja v okolici*/
-        for (let i = 0; i < hex.length; i++) {
-            const coor = hex[i].coor;
+        for (let i = 0; i < hexes.length; i++) {
+            const coor = hexes[i].coor;
             let tileContext: TileType[] = [];
-            tileContext = informOneHexSpace(coor, hex);
-            hex[i].context.tiles = tileContext;
+            tileContext = informOneSpace(coor, hexes);
+            hexes[i].context.tiles = tileContext;
         }
-        return hex;
+        return hexes;
     }
 
-    const informOneHexSpace = (
+    const informOneSpace = (
         { x, y, z }: { x: number, y: number, z: number },
         hexes: Tile[]
     ) => {
@@ -150,69 +156,87 @@ export default function useMap() {
         return tileTypes;
     }
 
-    const createMap = (data: MapData) => {
-        let arr = [];
-        for (let i = 0; i < data.length; i++) {
-            const coor = data[i].coor;
-            const xH = coor.x;
-            const yH = coor.y;
-            const zH = coor.z;
+    /*FUNCTIONS FOR HTML CONVERSION*/
 
-            if (zH !== undefined) {
-                const size = mapNums[1];
-                const offset = size * mapNums[2];
-                const x = ((offset * 1.73) * xH) + ((offset * 1.73) * yH);
-                const y = ((offset * 2) * yH) + (offset * zH);
-                let background = data[i].terrain.type === "vulcano" ?
-                    "red" :
-                    data[i].context.tiles.includes("vulcano") ?
-                        "orange" :
-                        "blue";
-                data[i].creature?.id === "player" ?
-                    background = player.body.color :
-                    "";
+    const createElsTileArr = (tileDataArr: Tile[]) => {
+        const tileArr = tileDataArr.map(
+            (tile) => {
 
-                const div = <>
+                const coor = tile.coor;
+                const offset = tileSize * tileSpacing;
+                const x = ((offset * 1.73) * coor.x) + ((offset * 1.73) * coor.y);
+                const y = ((offset * 2) * coor.y) + (offset * coor.z);
+
+                let background = "";
+                if (tile.terrain.type === "vulcano") {
+                    background = "red";
+                } else if (tile.context.tiles.includes("vulcano")) {
+                    background = "orange";
+                } else {
+                    background = "blue";
+                }
+
+                const playerPresent = tile.creature?.id === "player";
+                const growthRate = (
+                    (tileSize * 2) /
+                    (player.body.bodySizeMax / player.body.bodySize)
+                );
+                const borderRadius = `${growthRate}px ${growthRate}px ${growthRate}px ${growthRate}px`
+
+                return (
                     <div
-                        class="hex"
+                        class={"hex flex alignFlex"}
                         style={{
                             transform: `translate(${x}px, ${y}px)`,
-                            height: `${size * 1.73}px`,
-                            width: `${size}px`,
-                            backgroundColor: background
+                            height: `${tileSize * 1.73}px`,
+                            width: `${tileSize}px`,
+                            backgroundColor: background,
+                            zIndex: !playerPresent ? 5 : 3
                         }}>
-                        <p class={"cor"}>
-                            {/* {coor.x},
-                            {coor.y},
-                            {coor.z} <br />
-                            {i} */}
-                            {/* {data[i].context.border ? "yup" : "no"} */}
-                        </p>
+                        {
+                            playerPresent ?
+                                <div
+                                    id="player"
+                                    style={{
+                                        height: growthRate,
+                                        width: growthRate,
+                                        borderRadius: borderRadius,
+                                        backgroundColor: player.body.color,
+                                        transform: `rotate(${player.orientation}deg)`
+                                    }}></div> :
+                                <></>
+                        }
+                        {/* <p class={"info"}>{coor.x},{coor.y},{coor.z}<br />{index}</p> */}
+                        {/* <p class={"info"}>{tile.context.border ? "yup" : "no"}</p> */}
                     </div>
-                </>
-
-                arr.push(div);
+                )
             }
-        }
+        )
+        return tileArr;
+    }
 
+    const createMap = (tileDataArr: Tile[]) => {
+        const tileArr = createElsTileArr(tileDataArr);
         const hexMapBorder = 20;
-        return (<div
-            id="hexGrid"
-            style={{
-                minHeight: `${(
-                    ((mapNums[0] * 2) + 1) *
-                    (mapNums[1] * 1.73) +
-                    ((mapNums[2] * mapNums[0]) +
-                        (mapNums[0] * 15) * (mapNums[1] * 0.03))
-                ) + (hexMapBorder * 2)}px`,
-                top: `${(
-                    (mapNums[0] * 1) *
-                    (mapNums[1] * 1.8) *
-                    (mapNums[2] * 1.1)
-                ) + (hexMapBorder * 0.9)}px`
-            }}>
-            {arr}
-        </div>)
+        return (
+            <div
+                id="hexGrid"
+                style={{
+                    minHeight: `${(
+                        ((mapSize * 2) + 1) *
+                        (tileSize * 1.73) +
+                        ((tileSpacing * mapSize) +
+                            (mapSize * 15) * (tileSize * 0.03))
+                    ) + (hexMapBorder * 2)}px`,
+                    top: `${(
+                        (mapSize * 1) *
+                        (tileSize * 1.8) *
+                        (tileSpacing * 1.1)
+                    ) + (hexMapBorder * 0.9)}px`
+                }}>
+                {tileArr}
+            </div>
+        )
     }
 
     return {

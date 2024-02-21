@@ -1,7 +1,12 @@
 /*MAP*/
 
-type TileType = "sea" | "atVulcano" | "vulcano";
+type MapNumbers = {
+    mapSize: number;
+    tileSize: number;
+    tileSpacing: number;
+}
 
+type TileType = "sea" | "atVulcano" | "vulcano";
 
 type Temperatures = {
     scale: -3;
@@ -52,8 +57,6 @@ type Tile = {
     }
 };
 
-type MapData = HexTileData[];
-
 /*CREATURE*/
 
 type Segment = {} | {
@@ -78,11 +81,9 @@ type EnergySource = {
     metabolicRate: number;
 }
 
-type Orientation = "FL" | "F" | "FR" | "BL" | "B" | "BR";
-
 type Creature = {
     id: number;
-    orientation: Orientation;
+    orientation: number;
     general: {
         health: {
             hp: number;
@@ -113,6 +114,6 @@ export {
     TileType,
     TileData,
     Tile,
-    MapData,
+    MapNumbers,
     Creature
 }

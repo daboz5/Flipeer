@@ -1,26 +1,5 @@
-/*STATS*/
-
-#pcStats {
-    gap: 20px;
-}
-
-/*MAP*/
-
-#viewport {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    max-height: 100vh;
-    max-width: 100vw;
-}
-
 #player {
     position: absolute;
-    z-index: 1;
-}
-
-.bSeg {
-    height: 40px;
-    width: 40px;
-    border: 1px solid transparent;
+    border-top: 5px dotted black;
+    z-index: 3;
 }

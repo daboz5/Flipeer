@@ -24,7 +24,7 @@ export default function Game() {
         createMap,
         setMapSize
     } = useMap();
-    const { newHexGame } = useGame();
+    const { newGame } = useGame();
 
     useEffect(() => {
         if (mapData) {
@@ -37,7 +37,7 @@ export default function Game() {
 
     useEffect(() => {
         if (mapData) {
-            let newData = createMapData(mapNums[0]);
+            let newData = createMapData(mapNums.mapSize);
             newData[Math.floor(newData.length / 2)].creature = { id: "player" };
             setMapData(newData);
         }
@@ -46,11 +46,13 @@ export default function Game() {
 
     return (<>
 
+        {/*MAPA IN VSE NA NJEJ*/}
         <div id="viewport">
             {mapData ? createMap(mapData) : <></>}
         </div>
 
-        {mapData ?
+        {/*STATISTIKE IGRALCA IN GAME INFO*/}
+        {mapData &&
             <>
                 <div id="pcStats" class={"flex alignFlex"}>
                     <p>
@@ -70,19 +72,24 @@ export default function Game() {
                     </p>
                 </div>
                 <p>
-                    Za premikanje uporabi: <br />
+                    premikanje:<br />
                     <b>
-                        {mapData && "Q W E A S D"}
+                        Q W E<br />
+                        A S D<br />
+                    </b>
+                    obračanje:<br />
+                    <b>
+                        R F
                     </b>
                 </p>
-            </> :
-            <></>
+            </>
         }
 
+        {/*MENU IGRE*/}
         <div id="menu" class={"colFlex"}>
 
             <button
-                onClick={() => newHexGame()}>
+                onClick={() => newGame()}>
                 New Hex Map
             </button>
 

@@ -1,31 +1,10 @@
-#gameBox {
-    height: 100%;
-}
-
-/*SQUARE MAP*/
-
-.tile {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin: 20px 5px;
-}
-
-.rowTile {
-    display: flex;
-    height: 40px;
-}
-
-.colTile {
+#viewport {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 38px;
-    border: 1px dotted grey;
+    max-height: 100vh;
+    max-width: 100vw;
 }
-
-/*HEX MAP*/
 
 #hexGrid {
     position: relative;
@@ -56,7 +35,9 @@
     transform: rotate(-60deg);
 }
 
-.cor {
+/*only for checks*/
+
+.info {
     position: absolute;
     font-size: 0.7rem;
     margin: 10px 0;
