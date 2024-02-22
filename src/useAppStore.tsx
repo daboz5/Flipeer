@@ -10,7 +10,7 @@ type State = {
 type Action = {
     setMapNums(newNums: MapNumbers): void,
     setMapData(newMapData: Tile[] | null): void,
-    setPCData(newPCData: Creature): void,
+    setPlayerData(newPCData: Creature): void,
 }
 
 const useAppStore = create<State & Action>((set) => ({
@@ -24,7 +24,7 @@ const useAppStore = create<State & Action>((set) => ({
     })),
 
     player: {
-        id: 0,
+        id: "player",
         orientation: 0,
         general: {
             health: {
@@ -52,7 +52,7 @@ const useAppStore = create<State & Action>((set) => ({
         },
 
     },
-    setPCData: (newPCData) => set(() => ({
+    setPlayerData: (newPCData) => set(() => ({
         player: newPCData
     })),
 

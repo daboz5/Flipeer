@@ -16,25 +16,32 @@ export default function useMap() {
         tileSpacing: tileSpacing
     } = mapNums;
 
-    const tileTypes: TileData[] = [{
-        type: "sea",
-        values: {
-            temperature: { scale: 0, description: "average" },
-            resources: [{ type: "", amount: 0 }]
+    const tileTypes: { [key: string]: TileData } = {
+        sea: {
+            type: "sea",
+            values: {
+                color: "blue",
+                temperature: { scale: 0, description: "average" },
+                resources: [{ type: "", amount: 0 }]
+            }
+        },
+        atVulcano: {
+            type: "atVulcano",
+            values: {
+                color: "orange",
+                temperature: { scale: 2, description: "hot" },
+                resources: [{ type: "", amount: 0 }]
+            }
+        },
+        vulcano: {
+            type: "vulcano",
+            values: {
+                color: "red",
+                temperature: { scale: 3, description: "melting" },
+                resources: [{ type: "", amount: 0 }]
+            }
         }
-    }, {
-        type: "atVulcano",
-        values: {
-            temperature: { scale: 2, description: "hot" },
-            resources: [{ type: "", amount: 0 }]
-        }
-    }, {
-        type: "vulcano",
-        values: {
-            temperature: { scale: 3, description: "melting" },
-            resources: [{ type: "", amount: 0 }]
-        }
-    }]
+    }
 
     const setMapSize = (data: any) => {
         if (data) {
@@ -68,12 +75,12 @@ export default function useMap() {
     /*FUNCTIONS FOR CREATING BASE DATA STRUCTURES*/
 
     const getTileType = () => {
-        let tileData: TileData = tileTypes[0];
+        let tileData: TileData = tileTypes.sea;
 
         const chanNum = 15;
         const num = getRandomInt(chanNum);
         if (num === (chanNum - 1)) {
-            const querry = tileTypes.find((type) => type.type === "vulcano");
+            const querry = tileTypes.vulcano;
             if (querry) { tileData = querry }
         }
 
@@ -118,15 +125,21 @@ export default function useMap() {
     const informData = (hexes: Tile[]) => {
         /*Kjer se pojavi igralec ni nevarno*/
         const pcIndex = Math.floor(hexes.length / 2);
-        const startTile = tileTypes.find(terrain => terrain.type === "sea")
-        hexes[pcIndex].terrain = startTile ? startTile : tileTypes[0];
+        hexes[pcIndex].terrain = tileTypes.sea;
 
         /*Ozavesti kaj se nahaja v okolici*/
         for (let i = 0; i < hexes.length; i++) {
-            const coor = hexes[i].coor;
+
             let tileContext: TileType[] = [];
-            tileContext = informOneSpace(coor, hexes);
+            tileContext = informOneSpace(hexes[i].coor, hexes);
             hexes[i].context.tiles = tileContext;
+
+            if (
+                hexes[i].terrain.type !== "vulcano" &&
+                hexes[i].context.tiles.includes("vulcano")
+            ) {
+                hexes[i].terrain = tileTypes.atVulcano;
+            }
         }
         return hexes;
     }
@@ -143,7 +156,7 @@ export default function useMap() {
             { x: x + 1, y: y, z: z - 1 },
             { x: x - 1, y: y, z: z + 1 },
         ]
-        let tileTypes: TileType[] = [];
+        let tileContext: TileType[] = [];
         for (let i = 0; i < positions.length; i++) {
             const neighbour = hexes.find((e) =>
                 e.coor.x === positions[i].x &&
@@ -151,37 +164,29 @@ export default function useMap() {
                 e.coor.z === positions[i].z
             )
             const type = neighbour?.terrain.type;
-            type ? tileTypes.push(type) : "";
+            type ? tileContext.push(type) : "";
         }
-        return tileTypes;
+        return tileContext;
     }
 
     /*FUNCTIONS FOR HTML CONVERSION*/
 
     const createElsTileArr = (tileDataArr: Tile[]) => {
         const tileArr = tileDataArr.map(
-            (tile) => {
+            (tile, index) => {
 
                 const coor = tile.coor;
                 const offset = tileSize * tileSpacing;
                 const x = ((offset * 1.73) * coor.x) + ((offset * 1.73) * coor.y);
                 const y = ((offset * 2) * coor.y) + (offset * coor.z);
 
-                let background = "";
-                if (tile.terrain.type === "vulcano") {
-                    background = "red";
-                } else if (tile.context.tiles.includes("vulcano")) {
-                    background = "orange";
-                } else {
-                    background = "blue";
-                }
-
                 const playerPresent = tile.creature?.id === "player";
                 const growthRate = (
                     (tileSize * 2) /
                     (player.body.bodySizeMax / player.body.bodySize)
                 );
-                const borderRadius = `${growthRate}px ${growthRate}px ${growthRate}px ${growthRate}px`
+                const borderRadius = `${growthRate}px ${growthRate}px ${growthRate}px ${growthRate}px`;
+                const tileColour = tile.terrain.values.color;
 
                 return (
                     <div
@@ -190,7 +195,7 @@ export default function useMap() {
                             transform: `translate(${x}px, ${y}px)`,
                             height: `${tileSize * 1.73}px`,
                             width: `${tileSize}px`,
-                            backgroundColor: background,
+                            backgroundColor: tileColour,
                             zIndex: !playerPresent ? 5 : 3
                         }}>
                         {

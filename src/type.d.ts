@@ -8,7 +8,7 @@ type MapNumbers = {
 
 type TileType = "sea" | "atVulcano" | "vulcano";
 
-type Temperatures = {
+type Temperature = {
     scale: -3;
     description: "absolute";
 } | {
@@ -42,14 +42,15 @@ type Resource = {
 type TileData = {
     type: TileType;
     values: {
-        temperature: Temperatures;
+        color: string;
+        temperature: Temperature;
         resources: Resource[];
     }
 }
 
 type Tile = {
     coor: { x: number, y: number, z: number };
-    creature: Creature | { id: "player" } | null;
+    creature: Creature | null;
     terrain: TileData;
     context: {
         tiles: TileType[];
@@ -82,7 +83,7 @@ type EnergySource = {
 }
 
 type Creature = {
-    id: number;
+    id: number | "player";
     orientation: number;
     general: {
         health: {
