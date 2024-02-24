@@ -18,7 +18,7 @@ export default function useCreature() {
 
     const testMove = (mapData: Tile) => {
         const occupants = mapData.creature;
-        const terrain = mapData.terrain;
+        // const terrain = mapData.terrain;
 
         if (occupants) {
             return {
@@ -32,7 +32,7 @@ export default function useCreature() {
     }
 
     const afterMove = (creature: Creature, mapData: Tile) => {
-        const occupants = mapData.creature;
+        // const occupants = mapData.creature;
         const terrain = mapData.terrain;
 
         if (terrain.type === "vulcano") {

@@ -196,6 +196,7 @@ export default function useMap() {
     }
 
     const createTileEl = (tile: Tile, tileIndex: number) => {
+        tileIndex /*obstaja da se naredi TS happy in neha blokirati produkcijo*/
 
         /*COORDINATES AND MAP DESIGN*/
         const coor = tile.coor;
