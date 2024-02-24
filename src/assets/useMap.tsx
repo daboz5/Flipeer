@@ -1,11 +1,10 @@
 import toast from "react-hot-toast";
-import { Tile, TileType, TileData } from "../type";
+import { Tile, TileType, TileData, Creature } from "../type";
 import useAppStore from "../useAppStore";
 
 export default function useMap() {
 
     const {
-        player,
         mapNums,
         setMapNums,
     } = useAppStore();
@@ -171,50 +170,70 @@ export default function useMap() {
 
     /*FUNCTIONS FOR HTML CONVERSION*/
 
+    const createCreatureEl = (creature: Creature) => {
+
+        /*CREATURE CHECKS*/
+        const isDead = creature.general.health.hp === 0;
+        const isTired = creature.general.health.energy === 0;
+        const growthRate = (
+            (tileSize * 2) /
+            (creature.general.body.sizeMax / creature.general.body.size)
+        );
+        const borderRadius = `${growthRate}px ${growthRate}px ${growthRate}px ${growthRate}px`;
+
+        return (
+            <div
+                class={`creature ${isDead ? "dead" : ""} ${isTired ? "tired" : ""}`}
+                style={{
+                    height: growthRate,
+                    width: growthRate,
+                    borderRadius: borderRadius,
+                    backgroundColor: creature.general.body.color,
+                    transform: `rotate(${creature.orientation}deg)`
+                }}>
+            </div>
+        )
+    }
+
+    const createTileEl = (tile: Tile, tileIndex: number) => {
+
+        /*COORDINATES AND MAP DESIGN*/
+        const coor = tile.coor;
+        const offset = tileSize * tileSpacing;
+        const x = ((offset * 1.73) * coor.x) + ((offset * 1.73) * coor.y);
+        const y = ((offset * 2) * coor.y) + (offset * coor.z);
+
+        /*TERRAIN CHECKS*/
+        const tileColour = tile.terrain.values.color;
+
+        /*CREATRE CREATURE*/
+        let creatureEl = <></>;
+        if (tile.creature) {
+            creatureEl = createCreatureEl(tile.creature)
+        }
+
+        return (
+            <div
+                class={"hex flex alignFlex"}
+                style={{
+                    height: `${tileSize * 1.73}px`,
+                    width: `${tileSize}px`,
+                    backgroundColor: tileColour,
+                    transform: `translate(${x}px, ${y}px)`,
+                    zIndex: tile.creature ? 3 : 5
+                }}>
+                {/* <p class={"info"}>{coor.x},{coor.y},{coor.z}<br />{tileIndex}</p> */}
+                {/* <p class={"info"}>{tile.context.border ? "yup" : "no"}</p> */}
+                {creatureEl}
+            </div>
+        )
+    }
+
     const createElsTileArr = (tileDataArr: Tile[]) => {
         const tileArr = tileDataArr.map(
             (tile, index) => {
-
-                const coor = tile.coor;
-                const offset = tileSize * tileSpacing;
-                const x = ((offset * 1.73) * coor.x) + ((offset * 1.73) * coor.y);
-                const y = ((offset * 2) * coor.y) + (offset * coor.z);
-
-                const playerPresent = tile.creature?.id === "player";
-                const growthRate = (
-                    (tileSize * 2) /
-                    (player.body.bodySizeMax / player.body.bodySize)
-                );
-                const borderRadius = `${growthRate}px ${growthRate}px ${growthRate}px ${growthRate}px`;
-                const tileColour = tile.terrain.values.color;
-
-                return (
-                    <div
-                        class={"hex flex alignFlex"}
-                        style={{
-                            transform: `translate(${x}px, ${y}px)`,
-                            height: `${tileSize * 1.73}px`,
-                            width: `${tileSize}px`,
-                            backgroundColor: tileColour,
-                            zIndex: !playerPresent ? 5 : 3
-                        }}>
-                        {
-                            playerPresent ?
-                                <div
-                                    id="player"
-                                    style={{
-                                        height: growthRate,
-                                        width: growthRate,
-                                        borderRadius: borderRadius,
-                                        backgroundColor: player.body.color,
-                                        transform: `rotate(${player.orientation}deg)`
-                                    }}></div> :
-                                <></>
-                        }
-                        {/* <p class={"info"}>{coor.x},{coor.y},{coor.z}<br />{index}</p> */}
-                        {/* <p class={"info"}>{tile.context.border ? "yup" : "no"}</p> */}
-                    </div>
-                )
+                const tileDiv = createTileEl(tile, index);
+                return tileDiv;
             }
         )
         return tileArr;

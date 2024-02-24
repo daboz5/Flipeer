@@ -86,28 +86,28 @@ type Creature = {
     id: number | "player";
     orientation: number;
     general: {
-        health: {
-            hp: number;
-            hpMax: number;
+        body: {
+            color: string;
+            segmentation: Segment[];
+            size: number;
+            sizeMax: number;
         };
-        temperature: Temperatures[];
-        attack: number;
-        defence: number;
-        food: {
+        combat: {
+            attack: number;
+            defence: number;
+        };
+        health: {
             energy: number;
             energyMax: number;
+            energySourse: EnergySource[];
+            hp: number;
+            hpMax: number;
             storage: number;
             storageMax: number;
-            energySourse: EnergySource[];
         };
-        movement: Movement[];
+        movements: Movement[];
         resistences: Resistence[];
-    };
-    body: {
-        bodySize: number;
-        bodySizeMax: number;
-        segmentation: Segment[];
-        color: string;
+        temperature: Temperatures[];
     };
 }
 

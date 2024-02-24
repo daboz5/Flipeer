@@ -59,16 +59,16 @@ export default function Game() {
                         {player.general.health.hp} / {player.general.health.hpMax} Hp
                     </p>
                     <p>
-                        {player.general.food.energy} / {player.general.food.energyMax} Energy
+                        {player.general.health.energy} / {player.general.health.energyMax} Energy
                     </p>
                     <p>
-                        {player.general.attack} Atk
+                        {player.general.combat.attack} Atk
                     </p>
                     <p>
-                        {player.general.defence} Def
+                        {player.general.combat.defence} Def
                     </p>
                     <p>
-                        Size {player.body.bodySize}
+                        Size {player.general.body.size}
                     </p>
                 </div>
                 <p>

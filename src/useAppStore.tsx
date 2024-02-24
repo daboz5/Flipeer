@@ -10,7 +10,7 @@ type State = {
 type Action = {
     setMapNums(newNums: MapNumbers): void,
     setMapData(newMapData: Tile[] | null): void,
-    setPlayerData(newPCData: Creature): void,
+    setPlayer(newPCData: Creature): void,
 }
 
 const useAppStore = create<State & Action>((set) => ({
@@ -27,32 +27,32 @@ const useAppStore = create<State & Action>((set) => ({
         id: "player",
         orientation: 0,
         general: {
-            health: {
-                hp: 5,
-                hpMax: 5,
+            body: {
+                color: "pink",
+                size: 1,
+                sizeMax: 2,
+                segmentation: [],
             },
-            temperature: [{ scale: 2, description: "hot" }],
-            attack: 0,
-            defence: 0,
-            food: {
+            combat: {
+                attack: 0,
+                defence: 0,
+            },
+            health: {
                 energy: 3,
                 energyMax: 3,
+                energySourse: [],
+                hp: 5,
+                hpMax: 5,
                 storage: 0,
                 storageMax: 0,
-                energySourse: [],
             },
-            movement: [],
+            movements: [],
             resistences: [],
-        },
-        body: {
-            bodySize: 1,
-            bodySizeMax: 2,
-            segmentation: [],
-            color: "pink"
+            temperature: [{ scale: 2, description: "hot" }],
         },
 
     },
-    setPlayerData: (newPCData) => set(() => ({
+    setPlayer: (newPCData) => set(() => ({
         player: newPCData
     })),
 

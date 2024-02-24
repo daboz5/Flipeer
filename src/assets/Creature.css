@@ -1,5 +1,43 @@
-#player {
+.creature {
     position: absolute;
     border-top: 5px dotted black;
     z-index: 3;
+}
+
+.tired {
+    animation: tired 2.5s infinite ease-in-out;
+}
+
+.dead {
+    border: 0px solid black;
+    animation: death 1.2s infinite;
+}
+
+@keyframes tired {
+
+    0%,
+    100% {}
+
+    50% {
+        border-width: 8px;
+        border-color: rgb(128, 0, 0);
+    }
+}
+
+@keyframes death {
+
+    0%,
+    100% {
+        box-shadow: inset 0 0 1px 3px rgb(128, 0, 0);
+    }
+
+    40%,
+    60% {
+        box-shadow: inset 0 0 2px 5px rgb(128, 0, 0);
+    }
+
+    47%,
+    53% {
+        box-shadow: inset 0 0 4px 7px rgb(128, 0, 0);
+    }
 }
