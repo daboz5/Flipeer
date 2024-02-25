@@ -1,6 +1,7 @@
 import { Creature, Tile } from "../type";
 import useAppStore from "../useAppStore";
-import useGame from "./useGame";
+import useBasicFunction from "./useBasicFunction";
+import useCreatureStats from "./useCreatureStats";
 
 export default function useCreature() {
 
@@ -9,12 +10,59 @@ export default function useCreature() {
         mapData,
         setMapData
     } = useAppStore();
+    const { getRandomNum } = useBasicFunction();
     const {
         harm,
         heal,
         tire,
         rest,
-    } = useGame();
+    } = useCreatureStats();
+
+    const creatureDataBase: Creature[] = [
+        {
+            name: "vektor gamus",
+            type: "alien",
+            orientation: 0,
+            general: {
+                body: {
+                    color: "yellow",
+                    size: 1,
+                    sizeMax: 2,
+                    segmentation: [],
+                },
+                combat: {
+                    attack: 0,
+                    defence: 0,
+                },
+                health: {
+                    energy: 3,
+                    energyMax: 3,
+                    energySourse: [],
+                    hp: 5,
+                    hpMax: 5,
+                    storage: 0,
+                    storageMax: 0,
+                },
+                movements: [],
+                resistences: [],
+                temperature: [{ scale: 2, description: "hot" }],
+            },
+
+        },
+    ]
+
+    const createCreatureData = (name: string, str: number) => {
+        const ranNum = getRandomNum(10);
+        const presence = str / ranNum;
+        if (presence >= 1) {
+            const creature = creatureDataBase.find(
+                creature => creature.name === name
+            );
+            return creature
+        } else {
+            return null;
+        }
+    }
 
     const testMove = (mapData: Tile) => {
         const occupants = mapData.creature;
@@ -94,7 +142,7 @@ export default function useCreature() {
 
         if (moveKeys.includes(key)) {
 
-            const fromIndex = mapData.findIndex((hex) => hex.creature?.id === "player");
+            const fromIndex = mapData.findIndex((hex) => hex.creature?.type === "player");
             if (fromIndex === -1) { return }
             let creature = mapData[fromIndex].creature;
             if (!creature) { return }
@@ -139,8 +187,8 @@ export default function useCreature() {
         mapData: Tile[]
     ) => {
         const { y: pcY, z: pcZ } = mapData[fromIndex].coor;
-        const mapSize = mapNums.mapSize;
-        if (pcZ < mapSize && pcY > -mapSize) {
+        const mapRadius = mapNums.mapRadius;
+        if (pcZ < mapRadius && pcY > -mapRadius) {
             const moveToIndex = fromIndex - 1;
             creature.orientation = -60;
             const rested = forceRest(creature);
@@ -161,11 +209,11 @@ export default function useCreature() {
         mapData: Tile[]
     ) => {
         const { x: pcX, y: pcY } = mapData[fromIndex].coor;
-        const mapSize = mapNums.mapSize;
-        const radius = mapSize * 2;
+        const mapRadius = mapNums.mapRadius;
+        const radius = mapRadius * 2;
         let midDistance = Math.abs(pcX);
         if (pcX < 0) { midDistance-- }
-        if (pcX < mapSize && pcY > -mapSize) {
+        if (pcX < mapRadius && pcY > -mapRadius) {
             const moveToIndex = fromIndex + radius - midDistance;
             creature.orientation = 0;
             const rested = forceRest(creature);
@@ -186,11 +234,11 @@ export default function useCreature() {
         mapData: Tile[]
     ) => {
         const { x: pcX, z: pcZ } = mapData[fromIndex].coor;
-        const mapSize = mapNums.mapSize;
-        let radius = mapSize * 2;
+        const mapRadius = mapNums.mapRadius;
+        let radius = mapRadius * 2;
         let midDistance = Math.abs(pcX);
         if (pcX < 0) { midDistance-- }
-        if (pcX < mapSize && pcZ > -mapSize) {
+        if (pcX < mapRadius && pcZ > -mapRadius) {
             const moveToIndex = fromIndex + (radius + 1) - midDistance;
             creature.orientation = 60;
             const rested = forceRest(creature);
@@ -211,11 +259,11 @@ export default function useCreature() {
         mapData: Tile[]
     ) => {
         const { x: pcX, z: pcZ } = mapData[fromIndex].coor;
-        const mapSize = mapNums.mapSize;
-        let radius = mapSize * 2;
+        const mapRadius = mapNums.mapRadius;
+        let radius = mapRadius * 2;
         let midDistance = Math.abs(pcX);
         if (pcX > 0) { midDistance-- }
-        if (pcZ < mapSize && pcX > -mapSize) {
+        if (pcZ < mapRadius && pcX > -mapRadius) {
             const moveToIndex = fromIndex - (radius + 1) + midDistance;
             creature.orientation = -120;
             const rested = forceRest(creature);
@@ -236,11 +284,11 @@ export default function useCreature() {
         mapData: Tile[]
     ) => {
         const { x: pcX, y: pcY } = mapData[fromIndex].coor;
-        const mapSize = mapNums.mapSize;
-        let radius = mapSize * 2;
+        const mapRadius = mapNums.mapRadius;
+        let radius = mapRadius * 2;
         let midDistance = Math.abs(pcX);
         if (pcX > 0) { midDistance-- }
-        if (pcY < mapSize && pcX > -mapSize) {
+        if (pcY < mapRadius && pcX > -mapRadius) {
             const moveToIndex = fromIndex - radius + midDistance;
             creature.orientation = 180;
             const rested = forceRest(creature);
@@ -261,8 +309,8 @@ export default function useCreature() {
         mapData: Tile[]
     ) => {
         const { y: pcY, z: pcZ } = mapData[fromIndex].coor;
-        const mapSize = mapNums.mapSize;
-        if (pcZ > -mapSize && pcY < mapSize) {
+        const mapRadius = mapNums.mapRadius;
+        if (pcZ > -mapRadius && pcY < mapRadius) {
             const moveToIndex = fromIndex + 1;
             creature.orientation = 120;
             const rested = forceRest(creature);
@@ -278,6 +326,7 @@ export default function useCreature() {
     };
 
     return {
-        eventListenerMove
+        eventListenerMove,
+        createCreatureData
     }
 }

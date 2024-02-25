@@ -37,7 +37,7 @@ export default function Game() {
 
     useEffect(() => {
         if (mapData) {
-            let newData = createMapData(mapNums.mapSize);
+            let newData = createMapData(mapNums.mapRadius);
             newData[Math.floor(newData.length / 2)].creature = player;
             setMapData(newData);
         }

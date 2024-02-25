@@ -1,7 +1,7 @@
 /*MAP*/
 
 type MapNumbers = {
-    mapSize: number;
+    mapRadius: number;
     tileSize: number;
     tileSpacing: number;
 }
@@ -58,6 +58,16 @@ type Tile = {
     }
 };
 
+type Population = {
+    name: string;
+    strength: number;
+}
+
+type LocalMap = {
+    region: Tile[],
+    population: Population[]
+};
+
 /*CREATURE*/
 
 type Segment = {} | {
@@ -83,7 +93,8 @@ type EnergySource = {
 }
 
 type Creature = {
-    id: number | "player";
+    name: string;
+    type: "player" | "relative" | "alien";
     orientation: number;
     general: {
         body: {
@@ -116,5 +127,6 @@ export {
     TileData,
     Tile,
     MapNumbers,
-    Creature
+    LocalMap,
+    Creature,
 }

@@ -15,7 +15,7 @@ type Action = {
 
 const useAppStore = create<State & Action>((set) => ({
     mapNums: {
-        mapSize: 3,
+        mapRadius: 3,
         tileSize: 30,
         tileSpacing: 1
     },
@@ -24,7 +24,8 @@ const useAppStore = create<State & Action>((set) => ({
     })),
 
     player: {
-        id: "player",
+        name: "lupus lupus",
+        type: "player",
         orientation: 0,
         general: {
             body: {

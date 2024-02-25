@@ -1,6 +1,8 @@
-import toast from "react-hot-toast";
 import { Tile, TileType, TileData, Creature } from "../type";
+import toast from "react-hot-toast";
 import useAppStore from "../useAppStore";
+import useBasicFunction from "./useBasicFunction";
+import useCreature from "./useCreature";
 
 export default function useMap() {
 
@@ -8,9 +10,14 @@ export default function useMap() {
         mapNums,
         setMapNums,
     } = useAppStore();
+    const { getRandomNum } = useBasicFunction();
 
     const {
-        mapSize: mapSize,
+        createCreatureData
+    } = useCreature();
+
+    const {
+        mapRadius: mapRadius,
         tileSize: tileSize,
         tileSpacing: tileSpacing
     } = mapNums;
@@ -46,17 +53,17 @@ export default function useMap() {
         if (data) {
             const [el1, el2, el3]: [HTMLInputElement, HTMLInputElement, HTMLInputElement] = [data[1], data[2], data[3]];
             const [num1, num2, num3] = [Number(el1.value), Number(el2.value), Number(el3.value)];
-            const newMapSize = num1 ? num1 : mapSize;
+            const newmapRadius = num1 ? num1 : mapRadius;
             const newTileSize = num2 ? num2 : tileSize;
             const newTileSpacing = num3 ? num3 : tileSpacing;
             const screenTake = (
-                (newMapSize * 2) *
+                (newmapRadius * 2) *
                 (newTileSize * 2) *
                 (newTileSpacing * 1.1)
             );
             if (screenTake <= window.innerWidth && screenTake <= window.innerHeight) {
                 setMapNums({
-                    mapSize: newMapSize,
+                    mapRadius: newmapRadius,
                     tileSize: newTileSize,
                     tileSpacing: newTileSpacing
                 });
@@ -67,17 +74,13 @@ export default function useMap() {
         }
     }
 
-    const getRandomInt = (max: number) => {
-        return Math.floor(Math.random() * max);
-    }
-
     /*FUNCTIONS FOR CREATING BASE DATA STRUCTURES*/
 
     const getTileType = () => {
         let tileData: TileData = tileTypes.sea;
 
-        const chanNum = 15;
-        const num = getRandomInt(chanNum);
+        const chanNum = 10;
+        const num = getRandomNum(chanNum);
         if (num === (chanNum - 1)) {
             const querry = tileTypes.vulcano;
             if (querry) { tileData = querry }
@@ -87,6 +90,12 @@ export default function useMap() {
     }
 
     const createMapData = (radius: number) => {
+        /*MAP LIMITS*/
+        const mapSize = 1 + 3 * mapRadius * (mapRadius + 1);
+        const limitMax = Math.floor(mapSize / 6);
+        const limitMin = Math.floor(mapSize / 3);
+        let mainTerrainPicked = 0;
+        let mainTerrainPickedNot = 0;
 
         const hexes: Tile[] = [];
         for (let x = -radius; x <= radius; x++) {
@@ -94,16 +103,32 @@ export default function useMap() {
                 let z = -x - y;
                 if (z >= -radius && z <= radius) {
 
+                    /*REGULATE TERRAIN FREQUENCY*/
+                    let terrType = getTileType();
+                    terrType.type === "vulcano" ?
+                        mainTerrainPicked++ :
+                        mainTerrainPickedNot++
+                    if (mainTerrainPicked === limitMax / 3) {
+                        terrType = tileTypes["sea"];
+                        mainTerrainPicked = 0;
+                    }
+                    else if (mainTerrainPickedNot === limitMin) {
+                        terrType = tileTypes["vulcano"];
+                        mainTerrainPickedNot = 0;
+                    }
+
+                    /*CREATE TILE*/
                     const tile: Tile = {
                         coor: { x: x, y: y, z: z },
                         creature: null,
-                        terrain: getTileType(),
+                        terrain: terrType,
                         context: {
                             tiles: [],
                             border: false
                         }
                     };
 
+                    /*BE AWARE OF BORDER*/
                     if (
                         Math.abs(x) === radius ||
                         Math.abs(y) === radius ||
@@ -126,7 +151,7 @@ export default function useMap() {
         const pcIndex = Math.floor(hexes.length / 2);
         hexes[pcIndex].terrain = tileTypes.sea;
 
-        /*Ozavesti kaj se nahaja v okolici*/
+        /*Ozavesti teren ki se nahaja v okolici*/
         for (let i = 0; i < hexes.length; i++) {
 
             let tileContext: TileType[] = [];
@@ -139,7 +164,16 @@ export default function useMap() {
             ) {
                 hexes[i].terrain = tileTypes.atVulcano;
             }
+
+            /*Dodaj bitja*/
+            if (hexes[i].terrain.type === "atVulcano") {
+                const creature = createCreatureData("vektor gamus", 3);
+                if (creature) {
+                    hexes[i].creature = creature;
+                }
+            }
         }
+
         return hexes;
     }
 
@@ -248,13 +282,13 @@ export default function useMap() {
                 id="hexGrid"
                 style={{
                     minHeight: `${(
-                        ((mapSize * 2) + 1) *
+                        ((mapRadius * 2) + 1) *
                         (tileSize * 1.73) +
-                        ((tileSpacing * mapSize) +
-                            (mapSize * 15) * (tileSize * 0.03))
+                        ((tileSpacing * mapRadius) +
+                            (mapRadius * 15) * (tileSize * 0.03))
                     ) + (hexMapBorder * 2)}px`,
                     top: `${(
-                        (mapSize * 1) *
+                        (mapRadius * 1) *
                         (tileSize * 1.8) *
                         (tileSpacing * 1.1)
                     ) + (hexMapBorder * 0.9)}px`
