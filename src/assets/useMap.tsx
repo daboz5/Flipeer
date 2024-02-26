@@ -167,7 +167,7 @@ export default function useMap() {
 
             /*Dodaj bitja*/
             if (hexes[i].terrain.type === "atVulcano") {
-                const creature = createCreatureData("vektor gamus", 3);
+                const creature = createCreatureData("vektor gamus", 10, 3);
                 if (creature) {
                     hexes[i].creature = creature;
                 }

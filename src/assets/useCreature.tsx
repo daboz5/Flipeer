@@ -51,9 +51,9 @@ export default function useCreature() {
         },
     ]
 
-    const createCreatureData = (name: string, str: number) => {
-        const ranNum = getRandomNum(10);
-        const presence = str / ranNum;
+    const createCreatureData = (name: string, str: number, biom: number) => {
+        const ranNum = getRandomNum(10); // RANDOMIZIRAJ KJE JE TIP BITJA
+        const presence = (str / ranNum) / (5 / biom); // VSA POLJA NE MOREJO BITI ZASEDENA BREZ MOČNEGA BIOMA
         if (presence >= 1) {
             const creature = creatureDataBase.find(
                 creature => creature.name === name
@@ -64,19 +64,44 @@ export default function useCreature() {
         }
     }
 
-    const testMove = (mapData: Tile) => {
-        const occupants = mapData.creature;
-        // const terrain = mapData.terrain;
+    const checkForCombatAndLoot = (creature: Creature, mapToData: Tile) => {
+        const occupants = mapToData.creature?.general;
+        const attacker = creature.general;
 
-        if (occupants) {
-            return {
-                move: false
+        if (occupants !== undefined) {
+            const dmg = attacker.combat.attack - occupants.combat.defence
+            const newOccHp = occupants.health.hp - dmg;
+
+            if (dmg > 0 && newOccHp <= 0) {
+                occupants.health.hp = 0;
+                const energyGain = Math.floor(attacker.body.size / 100) + 1;
+                const newEnergy = attacker.health.energy + energyGain;
+                const energyMax = attacker.health.energyMax;
+
+                if (energyMax < newEnergy) {
+                    attacker.health.energy = energyMax;
+                } else {
+                    attacker.health.energy = newEnergy;
+                }
+
+                if (((occupants.body.size * 2) <= attacker.body.size)) {
+                    return true;
+                } else {
+                    const bodyEaten = occupants.body.size / 2;
+                    occupants.body.size - bodyEaten;
+                    return false;
+                }
+
+            } else if (dmg > 0) {
+                occupants.health.hp = newOccHp;
+                return false;
+
+            } else {
+                return false;
             }
         }
 
-        return {
-            move: true
-        }
+        return true;
     }
 
     const afterMove = (creature: Creature, mapData: Tile) => {
@@ -104,12 +129,17 @@ export default function useCreature() {
         mapToData: Tile,
         mapData: Tile[]
     ) => {
-        if (testMove(mapToData)) {
+
+        const checkCombat = checkForCombatAndLoot(creature, mapToData);
+        if (checkCombat) {
             afterMove(creature, mapToData);
             mapFromData.creature = null;
             mapToData.creature = creature;
-            setMapData(mapData);
+        } else {
+            afterMove(creature, mapFromData);
         }
+
+        setMapData(mapData);
     }
 
     const rotate = (howMuch: number, creature: Creature, fromIndex: number, mapData: Tile[]) => {

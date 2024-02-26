@@ -64,8 +64,9 @@ type Population = {
 }
 
 type LocalMap = {
-    region: Tile[],
-    population: Population[]
+    region: Tile[];
+    population: Population[];
+    biomStr: number;
 };
 
 /*CREATURE*/
