@@ -1,5 +1,6 @@
 import { Creature } from "../type";
 import useAppStore from "../useAppStore"
+import useCreature from "./useCreature";
 import useMap from "./useMap";
 
 export default function useGame() {
@@ -9,13 +10,24 @@ export default function useGame() {
         setMapData,
         setPlayer
     } = useAppStore();
+    const { pcSight } = useCreature();
     const { createMapData } = useMap();
 
     const newGamePlayer: Creature = {
         name: "lupus lupus",
         type: "player",
         orientation: 0,
+        alive: true,
         general: {
+            awareness: {
+                all: 1,
+                lf: 0,
+                f: 0,
+                rf: 0,
+                lb: 0,
+                b: 0,
+                rb: 0,
+            },
             body: {
                 color: "pink",
                 size: 1,
@@ -43,8 +55,10 @@ export default function useGame() {
 
     const newGame = () => {
         let newData = createMapData(mapNums.mapRadius);
-        newData[Math.floor(newData.length / 2)].creature = newGamePlayer;
+        let index = Math.floor(newData.length / 2);
+        newData[index].creature = newGamePlayer;
         setPlayer(newGamePlayer);
+        pcSight(newGamePlayer, newData, index);
         setMapData(newData);
     };
 

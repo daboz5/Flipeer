@@ -1,6 +1,7 @@
 import { Creature, Tile } from "../type";
 import useAppStore from "../useAppStore";
 import useBasicFunction from "./useBasicFunction";
+import useCompass from "./useCompass";
 import useCreatureStats from "./useCreatureStats";
 
 export default function useCreature() {
@@ -11,6 +12,11 @@ export default function useCreature() {
         setMapData
     } = useAppStore();
     const { getRandomNum } = useBasicFunction();
+    const {
+        guessLF, guessF, guessRF,
+        guessLB, guessB, guessRB,
+        roundReach
+    } = useCompass();
     const {
         harm,
         heal,
@@ -23,7 +29,17 @@ export default function useCreature() {
             name: "vektor gamus",
             type: "alien",
             orientation: 0,
+            alive: true,
             general: {
+                awareness: {
+                    all: 1,
+                    lf: 0,
+                    f: 0,
+                    rf: 0,
+                    lb: 0,
+                    b: 0,
+                    rb: 0,
+                },
                 body: {
                     color: "yellow",
                     size: 1,
@@ -104,9 +120,10 @@ export default function useCreature() {
         return true;
     }
 
-    const afterMove = (creature: Creature, mapData: Tile) => {
+    const afterMove = (creature: Creature, mapData: Tile[], toIndex: number) => {
         // const occupants = mapData.creature;
-        const terrain = mapData.terrain;
+
+        const terrain = mapData[toIndex].terrain;
 
         if (terrain.type === "vulcano") {
             creature = harm(creature, 2);
@@ -121,22 +138,26 @@ export default function useCreature() {
         if (terrain.type === "sea") {
             creature = tire(creature, 1);
         }
+
+        if (creature.type === "player") {
+            pcSight(creature, mapData, toIndex)
+        }
     }
 
     const startMove = (
         creature: Creature,
-        mapFromData: Tile,
-        mapToData: Tile,
-        mapData: Tile[]
+        mapData: Tile[],
+        fromIndex: number,
+        toIndex: number,
     ) => {
 
-        const checkCombat = checkForCombatAndLoot(creature, mapToData);
+        const checkCombat = checkForCombatAndLoot(creature, mapData[toIndex]);
         if (checkCombat) {
-            afterMove(creature, mapToData);
-            mapFromData.creature = null;
-            mapToData.creature = creature;
+            afterMove(creature, mapData, toIndex);
+            mapData[fromIndex].creature = null;
+            mapData[toIndex].creature = creature;
         } else {
-            afterMove(creature, mapFromData);
+            afterMove(creature, mapData, fromIndex);
         }
 
         setMapData(mapData);
@@ -189,6 +210,8 @@ export default function useCreature() {
                 return
             }
 
+            aiTurn(mapData);
+
             /*MOVE TO TILE CHECKS*/
             if (key === "q" || key === "Q") {
                 moveLF(creature, fromIndex, mapData);
@@ -211,23 +234,56 @@ export default function useCreature() {
         }
     }
 
+    const aiTurn = (mapData: Tile[]) => {
+        mapData.forEach((tile, index) => {
+            const creature = tile.creature;
+            if (
+                creature &&
+                creature.alive
+                // creature.type !== "player"
+            ) {
+                evaluate(creature, mapData, index);
+            }
+        });
+    }
+
+    const evaluate = (
+        creature: Creature,
+        mapData: Tile[],
+        index: number
+    ) => {
+        const result = roundReach(mapData, index, creature.general.awareness.all);
+        return result;
+    }
+
+    const pcSight = (
+        creature: Creature,
+        mapData: Tile[],
+        index: number
+    ) => {
+        mapData.map(tile => tile.seen = 0);
+        const extraSight = roundReach(mapData, index, (creature.general.awareness.all + 1));
+        extraSight.forEach(ind => mapData[ind].seen = 50);
+        const sight = roundReach(mapData, index, creature.general.awareness.all);
+        sight.forEach(ind => mapData[ind].seen = 100);
+    }
+
     const moveLF = (
         creature: Creature,
         fromIndex: number,
         mapData: Tile[]
     ) => {
         const { y: pcY, z: pcZ } = mapData[fromIndex].coor;
-        const mapRadius = mapNums.mapRadius;
-        if (pcZ < mapRadius && pcY > -mapRadius) {
-            const moveToIndex = fromIndex - 1;
+        const mapRad = mapNums.mapRadius;
+        if (pcZ < mapRad && pcY > -mapRad) {
             creature.orientation = -60;
             const rested = forceRest(creature);
             if (rested) {
                 startMove(
                     creature,
-                    mapData[fromIndex],
-                    mapData[moveToIndex],
-                    mapData
+                    mapData,
+                    fromIndex,
+                    guessLF(fromIndex)
                 );
             }
         }
@@ -239,20 +295,16 @@ export default function useCreature() {
         mapData: Tile[]
     ) => {
         const { x: pcX, y: pcY } = mapData[fromIndex].coor;
-        const mapRadius = mapNums.mapRadius;
-        const radius = mapRadius * 2;
-        let midDistance = Math.abs(pcX);
-        if (pcX < 0) { midDistance-- }
-        if (pcX < mapRadius && pcY > -mapRadius) {
-            const moveToIndex = fromIndex + radius - midDistance;
+        const mapRad = mapNums.mapRadius;
+        if (pcX < mapRad && pcY > -mapRad) {
             creature.orientation = 0;
             const rested = forceRest(creature);
             if (rested) {
                 startMove(
                     creature,
-                    mapData[fromIndex],
-                    mapData[moveToIndex],
-                    mapData
+                    mapData,
+                    fromIndex,
+                    guessF(pcX, fromIndex, mapRad)
                 );
             }
         }
@@ -264,20 +316,16 @@ export default function useCreature() {
         mapData: Tile[]
     ) => {
         const { x: pcX, z: pcZ } = mapData[fromIndex].coor;
-        const mapRadius = mapNums.mapRadius;
-        let radius = mapRadius * 2;
-        let midDistance = Math.abs(pcX);
-        if (pcX < 0) { midDistance-- }
-        if (pcX < mapRadius && pcZ > -mapRadius) {
-            const moveToIndex = fromIndex + (radius + 1) - midDistance;
+        const mapRad = mapNums.mapRadius;
+        if (pcX < mapRad && pcZ > -mapRad) {
             creature.orientation = 60;
             const rested = forceRest(creature);
             if (rested) {
                 startMove(
                     creature,
-                    mapData[fromIndex],
-                    mapData[moveToIndex],
-                    mapData
+                    mapData,
+                    fromIndex,
+                    guessRF(pcX, fromIndex, mapRad)
                 );
             }
         }
@@ -289,20 +337,16 @@ export default function useCreature() {
         mapData: Tile[]
     ) => {
         const { x: pcX, z: pcZ } = mapData[fromIndex].coor;
-        const mapRadius = mapNums.mapRadius;
-        let radius = mapRadius * 2;
-        let midDistance = Math.abs(pcX);
-        if (pcX > 0) { midDistance-- }
-        if (pcZ < mapRadius && pcX > -mapRadius) {
-            const moveToIndex = fromIndex - (radius + 1) + midDistance;
+        const mapRad = mapNums.mapRadius;
+        if (pcZ < mapRad && pcX > -mapRad) {
             creature.orientation = -120;
             const rested = forceRest(creature);
             if (rested) {
                 startMove(
                     creature,
-                    mapData[fromIndex],
-                    mapData[moveToIndex],
-                    mapData
+                    mapData,
+                    fromIndex,
+                    guessLB(pcX, fromIndex, mapRad)
                 );
             }
         }
@@ -314,20 +358,16 @@ export default function useCreature() {
         mapData: Tile[]
     ) => {
         const { x: pcX, y: pcY } = mapData[fromIndex].coor;
-        const mapRadius = mapNums.mapRadius;
-        let radius = mapRadius * 2;
-        let midDistance = Math.abs(pcX);
-        if (pcX > 0) { midDistance-- }
-        if (pcY < mapRadius && pcX > -mapRadius) {
-            const moveToIndex = fromIndex - radius + midDistance;
+        const mapRad = mapNums.mapRadius;
+        if (pcY < mapRad && pcX > -mapRad) {
             creature.orientation = 180;
             const rested = forceRest(creature);
             if (rested) {
                 startMove(
                     creature,
-                    mapData[fromIndex],
-                    mapData[moveToIndex],
-                    mapData
+                    mapData,
+                    fromIndex,
+                    guessB(pcX, fromIndex, mapRad)
                 );
             }
         }
@@ -341,15 +381,14 @@ export default function useCreature() {
         const { y: pcY, z: pcZ } = mapData[fromIndex].coor;
         const mapRadius = mapNums.mapRadius;
         if (pcZ > -mapRadius && pcY < mapRadius) {
-            const moveToIndex = fromIndex + 1;
             creature.orientation = 120;
             const rested = forceRest(creature);
             if (rested) {
                 startMove(
                     creature,
-                    mapData[fromIndex],
-                    mapData[moveToIndex],
-                    mapData
+                    mapData,
+                    fromIndex,
+                    guessRB(fromIndex)
                 );
             }
         }
@@ -357,6 +396,7 @@ export default function useCreature() {
 
     return {
         eventListenerMove,
-        createCreatureData
+        createCreatureData,
+        pcSight
     }
 }

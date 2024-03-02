@@ -50,12 +50,13 @@ type TileData = {
 
 type Tile = {
     coor: { x: number, y: number, z: number };
-    creature: Creature | null;
-    terrain: TileData;
     context: {
         tiles: TileType[];
         border: boolean;
     }
+    creature: Creature | null;
+    seen: 0 | 50 | 100;
+    terrain: TileData;
 };
 
 type Population = {
@@ -96,8 +97,18 @@ type EnergySource = {
 type Creature = {
     name: string;
     type: "player" | "relative" | "alien";
+    alive: boolean;
     orientation: number;
     general: {
+        awareness: {
+            all: number;
+            lf: number;
+            f: number;
+            rf: number;
+            lb: number;
+            b: number;
+            rb: number;
+        }
         body: {
             color: string;
             segmentation: Segment[];

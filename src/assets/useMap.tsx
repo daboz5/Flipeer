@@ -8,6 +8,8 @@ export default function useMap() {
 
     const {
         mapNums,
+        showCoor,
+        showBorder,
         setMapNums,
     } = useAppStore();
     const { getRandomNum } = useBasicFunction();
@@ -120,12 +122,13 @@ export default function useMap() {
                     /*CREATE TILE*/
                     const tile: Tile = {
                         coor: { x: x, y: y, z: z },
-                        creature: null,
-                        terrain: terrType,
                         context: {
                             tiles: [],
                             border: false
-                        }
+                        },
+                        creature: null,
+                        seen: 0,
+                        terrain: terrType,
                     };
 
                     /*BE AWARE OF BORDER*/
@@ -237,6 +240,7 @@ export default function useMap() {
         const offset = tileSize * tileSpacing;
         const x = ((offset * 1.73) * coor.x) + ((offset * 1.73) * coor.y);
         const y = ((offset * 2) * coor.y) + (offset * coor.z);
+        const seen = tile.seen;
 
         /*TERRAIN CHECKS*/
         const tileColour = tile.terrain.values.color;
@@ -255,10 +259,18 @@ export default function useMap() {
                     width: `${tileSize}px`,
                     backgroundColor: tileColour,
                     transform: `translate(${x}px, ${y}px)`,
-                    zIndex: tile.creature ? 3 : 5
+                    zIndex: tile.creature ? 3 : 5,
+                    filter: `brightness(${seen}%)`
                 }}>
-                {/* <p class={"info"}>{coor.x},{coor.y},{coor.z}<br />{tileIndex}</p> */}
-                {/* <p class={"info"}>{tile.context.border ? "yup" : "no"}</p> */}
+                {showCoor &&
+                    <p class={"info"}>
+                        {coor.x},{coor.y},{coor.z}<br />
+                        {tileIndex}
+                    </p>}
+                {showBorder &&
+                    <p class={"info"}>
+                        {tile.context.border ? "yup" : "no"}
+                    </p>}
                 {creatureEl}
             </div>
         )

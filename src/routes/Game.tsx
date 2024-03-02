@@ -15,6 +15,8 @@ export default function Game() {
         player,
         mapData,
         setMapData,
+        switchShowCoor,
+        switchBorder,
     } = useAppStore();
     const {
         eventListenerMove,
@@ -56,19 +58,19 @@ export default function Game() {
             <>
                 <div id="pcStats" class={"flex alignFlex"}>
                     <p>
-                        {player.general.health.hp} / {player.general.health.hpMax} Hp
+                        {player?.general.health.hp} / {player?.general.health.hpMax} Hp
                     </p>
                     <p>
-                        {player.general.health.energy} / {player.general.health.energyMax} Energy
+                        {player?.general.health.energy} / {player?.general.health.energyMax} Energy
                     </p>
                     <p>
-                        {player.general.combat.attack} Atk
+                        {player?.general.combat.attack} Atk
                     </p>
                     <p>
-                        {player.general.combat.defence} Def
+                        {player?.general.combat.defence} Def
                     </p>
                     <p>
-                        Size {player.general.body.size}
+                        Size {player?.general.body.size}
                     </p>
                 </div>
                 <p>
@@ -124,6 +126,16 @@ export default function Game() {
                     </input>
                 </label>
             </form>
+
+            <button
+                onClick={() => switchShowCoor()}>
+                Show / Hide XYZ Index
+            </button>
+
+            <button
+                onClick={() => switchBorder()}>
+                Show / Hide Border
+            </button>
 
             <p>* Work in progress</p>
 
