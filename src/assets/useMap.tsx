@@ -1,8 +1,9 @@
-import { Tile, TileType, TileData, Creature } from "../type";
+import { Tile, TileType, TileData, Creature, Coor } from "../type";
 import toast from "react-hot-toast";
 import useAppStore from "../useAppStore";
 import useBasicFunction from "./useBasicFunction";
 import useCreature from "./useCreature";
+import useCompass from "./useCompass";
 
 export default function useMap() {
 
@@ -13,13 +14,10 @@ export default function useMap() {
         setMapNums,
     } = useAppStore();
     const { getRandomNum } = useBasicFunction();
-
+    const { roundReach } = useCompass();
+    const { createCreatureData } = useCreature();
     const {
-        createCreatureData
-    } = useCreature();
-
-    const {
-        mapRadius: mapRadius,
+        mapRadius: mapRad,
         tileSize: tileSize,
         tileSpacing: tileSpacing
     } = mapNums;
@@ -55,7 +53,7 @@ export default function useMap() {
         if (data) {
             const [el1, el2, el3]: [HTMLInputElement, HTMLInputElement, HTMLInputElement] = [data[1], data[2], data[3]];
             const [num1, num2, num3] = [Number(el1.value), Number(el2.value), Number(el3.value)];
-            const newmapRadius = num1 ? num1 : mapRadius;
+            const newmapRadius = num1 ? num1 : mapRad;
             const newTileSize = num2 ? num2 : tileSize;
             const newTileSpacing = num3 ? num3 : tileSpacing;
             const screenTake = (
@@ -93,12 +91,13 @@ export default function useMap() {
 
     const createMapData = (radius: number) => {
         /*MAP LIMITS*/
-        const mapSize = 1 + 3 * mapRadius * (mapRadius + 1);
+        const mapSize = 1 + 3 * mapRad * (mapRad + 1);
         const limitMax = Math.floor(mapSize / 6);
         const limitMin = Math.floor(mapSize / 3);
         let mainTerrainPicked = 0;
         let mainTerrainPickedNot = 0;
 
+        let index = 0;
         const hexes: Tile[] = [];
         for (let x = -radius; x <= radius; x++) {
             for (let y = -radius; y <= radius; y++) {
@@ -121,15 +120,72 @@ export default function useMap() {
 
                     /*CREATE TILE*/
                     const tile: Tile = {
-                        coor: { x: x, y: y, z: z },
+                        info: {
+                            index: index,
+                            coor: { x: x, y: y, z: z },
+                        },
                         context: {
-                            tiles: [],
-                            border: false
+                            indexes: [],
+                            coors: [],
+                            border: false,
+                            tileTypes: [],
                         },
                         creature: null,
                         seen: 0,
                         terrain: terrType,
                     };
+
+                    /*BE AWARE OF NEIGHBORS*/
+                    const coor = tile.info.coor;
+                    const conCoor = tile.context.coors;
+                    if (coor.x + 1 <= mapRad &&
+                        coor.y - 1 >= -mapRad) {
+                        conCoor.push({
+                            x: coor.x + 1,
+                            y: coor.y - 1,
+                            z: coor.z
+                        });
+                    }
+                    if (coor.x + 1 <= mapRad &&
+                        coor.z - 1 >= -mapRad) {
+                        conCoor.push({
+                            x: coor.x + 1,
+                            y: coor.y,
+                            z: coor.z - 1
+                        });
+                    }
+                    if (coor.x - 1 >= -mapRad &&
+                        coor.y + 1 <= mapRad) {
+                        conCoor.push({
+                            x: coor.x - 1,
+                            y: coor.y + 1,
+                            z: coor.z
+                        });
+                    }
+                    if (coor.x - 1 >= -mapRad &&
+                        coor.z + 1 <= mapRad) {
+                        conCoor.push({
+                            x: coor.x - 1,
+                            y: coor.y,
+                            z: coor.z + 1
+                        });
+                    }
+                    if (coor.y - 1 >= -mapRad &&
+                        coor.z + 1 <= mapRad) {
+                        conCoor.push({
+                            x: coor.x,
+                            y: coor.y - 1,
+                            z: coor.z + 1
+                        });
+                    }
+                    if (coor.y + 1 <= mapRad &&
+                        coor.z - 1 >= -mapRad) {
+                        conCoor.push({
+                            x: coor.x,
+                            y: coor.y + 1,
+                            z: coor.z - 1
+                        });
+                    }
 
                     /*BE AWARE OF BORDER*/
                     if (
@@ -139,6 +195,7 @@ export default function useMap() {
                     ) { tile.context.border = true }
 
                     hexes.push(tile);
+                    index++;
                 }
             }
         }
@@ -154,23 +211,33 @@ export default function useMap() {
         const pcIndex = Math.floor(hexes.length / 2);
         hexes[pcIndex].terrain = tileTypes.sea;
 
-        /*Ozavesti teren ki se nahaja v okolici*/
+        /*Ozavesti kaj se nahaja v okolici*/
         for (let i = 0; i < hexes.length; i++) {
 
-            let tileContext: TileType[] = [];
-            tileContext = informOneSpace(hexes[i].coor, hexes);
-            hexes[i].context.tiles = tileContext;
+            const indexArr: number[] = [];
+            const coorArr: Coor[] = [];
+            const tileTypeArr: TileType[] = [];
+            const indexMapArr = roundReach(hexes, i, 1);
+            indexMapArr.forEach(el => {
+                indexArr.push(hexes[el].info.index);
+                coorArr.push(hexes[el].info.coor);
+                tileTypeArr.push(hexes[el].terrain.type);
+            })
+            hexes[i].context.indexes = indexArr;
+            hexes[i].context.coors = coorArr;
+            hexes[i].context.tileTypes = tileTypeArr;
 
+            /*Pri vulkanu*/
             if (
                 hexes[i].terrain.type !== "vulcano" &&
-                hexes[i].context.tiles.includes("vulcano")
+                hexes[i].context.tileTypes.includes("vulcano")
             ) {
                 hexes[i].terrain = tileTypes.atVulcano;
             }
 
             /*Dodaj bitja*/
             if (hexes[i].terrain.type === "atVulcano") {
-                const creature = createCreatureData("vektor gamus", 10, 3);
+                const creature = createCreatureData("vektor gamus", 3, 3);
                 if (creature) {
                     hexes[i].creature = creature;
                 }
@@ -180,38 +247,13 @@ export default function useMap() {
         return hexes;
     }
 
-    const informOneSpace = (
-        { x, y, z }: { x: number, y: number, z: number },
-        hexes: Tile[]
-    ) => {
-        const positions = [
-            { x: x + 1, y: y - 1, z: z },
-            { x: x - 1, y: y + 1, z: z },
-            { x: x, y: y + 1, z: z - 1 },
-            { x: x, y: y - 1, z: z + 1 },
-            { x: x + 1, y: y, z: z - 1 },
-            { x: x - 1, y: y, z: z + 1 },
-        ]
-        let tileContext: TileType[] = [];
-        for (let i = 0; i < positions.length; i++) {
-            const neighbour = hexes.find((e) =>
-                e.coor.x === positions[i].x &&
-                e.coor.y === positions[i].y &&
-                e.coor.z === positions[i].z
-            )
-            const type = neighbour?.terrain.type;
-            type ? tileContext.push(type) : "";
-        }
-        return tileContext;
-    }
-
     /*FUNCTIONS FOR HTML CONVERSION*/
 
     const createCreatureEl = (creature: Creature) => {
 
         /*CREATURE CHECKS*/
-        const isDead = creature.general.health.hp === 0;
-        const isTired = creature.general.health.energy === 0;
+        const isDead = creature.general.combat.hp === 0;
+        const isTired = creature.general.energy.stamina === 0;
         const growthRate = (
             (tileSize * 2) /
             (creature.general.body.sizeMax / creature.general.body.size)
@@ -236,7 +278,7 @@ export default function useMap() {
         tileIndex /*obstaja da se naredi TS happy in neha blokirati produkcijo*/
 
         /*COORDINATES AND MAP DESIGN*/
-        const coor = tile.coor;
+        const coor = tile.info.coor;
         const offset = tileSize * tileSpacing;
         const x = ((offset * 1.73) * coor.x) + ((offset * 1.73) * coor.y);
         const y = ((offset * 2) * coor.y) + (offset * coor.z);
@@ -294,13 +336,13 @@ export default function useMap() {
                 id="hexGrid"
                 style={{
                     minHeight: `${(
-                        ((mapRadius * 2) + 1) *
+                        ((mapRad * 2) + 1) *
                         (tileSize * 1.73) +
-                        ((tileSpacing * mapRadius) +
-                            (mapRadius * 15) * (tileSize * 0.03))
+                        ((tileSpacing * mapRad) +
+                            (mapRad * 15) * (tileSize * 0.03))
                     ) + (hexMapBorder * 2)}px`,
                     top: `${(
-                        (mapRadius * 1) *
+                        (mapRad * 1) *
                         (tileSize * 1.8) *
                         (tileSpacing * 1.1)
                     ) + (hexMapBorder * 0.9)}px`

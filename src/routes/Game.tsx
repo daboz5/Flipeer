@@ -20,6 +20,7 @@ export default function Game() {
     } = useAppStore();
     const {
         eventListenerMove,
+        pcSight
     } = useCreature();
     const {
         createMapData,
@@ -45,6 +46,19 @@ export default function Game() {
         }
     }, [mapNums])
 
+    useEffect(() => {
+        if (player && mapData) {
+            let index = 0;
+            mapData.forEach((tile, ind) => {
+                if (tile.creature?.type === "player") {
+                    index = ind;
+                }
+            });
+            pcSight(player, mapData, index);
+            setMapData(mapData);
+        }
+    }, [])
+
 
     return (<>
 
@@ -58,10 +72,10 @@ export default function Game() {
             <>
                 <div id="pcStats" class={"flex alignFlex"}>
                     <p>
-                        {player?.general.health.hp} / {player?.general.health.hpMax} Hp
+                        {player?.general.combat.hp} / {player?.general.combat.hpMax} Hp
                     </p>
                     <p>
-                        {player?.general.health.energy} / {player?.general.health.energyMax} Energy
+                        {player?.general.energy.stamina} / {player?.general.energy.staminaMax} Energy
                     </p>
                     <p>
                         {player?.general.combat.attack} Atk

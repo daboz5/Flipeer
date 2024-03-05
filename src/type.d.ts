@@ -1,5 +1,7 @@
 /*MAP*/
 
+type Coor = { x: number, y: number, z: number }
+
 type MapNumbers = {
     mapRadius: number;
     tileSize: number;
@@ -49,13 +51,18 @@ type TileData = {
 }
 
 type Tile = {
-    coor: { x: number, y: number, z: number };
+    info: {
+        index: number;
+        coor: Coor;
+    },
     context: {
-        tiles: TileType[];
         border: boolean;
+        coors: Coor[];
+        indexes: number[];
+        tileTypes: TileType[];
     }
     creature: Creature | null;
-    seen: 0 | 50 | 100;
+    seen: 0 | 25 | 100;
     terrain: TileData;
 };
 
@@ -94,9 +101,15 @@ type EnergySource = {
     metabolicRate: number;
 }
 
+type GeneSplit = {
+    species: string;
+    split: number;
+}
+
 type Creature = {
     name: string;
-    type: "player" | "relative" | "alien";
+    type: "player" | "NPC";
+    genepool: GeneSplit[];
     alive: boolean;
     orientation: number;
     general: {
@@ -118,13 +131,13 @@ type Creature = {
         combat: {
             attack: number;
             defence: number;
-        };
-        health: {
-            energy: number;
-            energyMax: number;
-            energySourse: EnergySource[];
             hp: number;
             hpMax: number;
+        };
+        energy: {
+            stamina: number;
+            staminaMax: number;
+            metabolizes: EnergySource[];
             storage: number;
             storageMax: number;
         };
@@ -134,11 +147,21 @@ type Creature = {
     };
 }
 
+type TileEvaluation = {
+    index: number;
+    desire: number;
+    hardNo: boolean;
+    flee: boolean;
+    hunt: boolean;
+}
+
 export {
+    Coor,
     TileType,
     TileData,
     Tile,
     MapNumbers,
     LocalMap,
     Creature,
+    TileEvaluation
 }

@@ -16,11 +16,15 @@ export default function useGame() {
     const newGamePlayer: Creature = {
         name: "lupus lupus",
         type: "player",
+        genepool: [{
+            species: "lupus lupus",
+            split: 0,
+        }],
         orientation: 0,
         alive: true,
         general: {
             awareness: {
-                all: 1,
+                all: 2,
                 lf: 0,
                 f: 0,
                 rf: 0,
@@ -35,15 +39,15 @@ export default function useGame() {
                 segmentation: [],
             },
             combat: {
+                hp: 5,
+                hpMax: 5,
                 attack: 0,
                 defence: 0,
             },
-            health: {
-                energy: 3,
-                energyMax: 3,
-                energySourse: [],
-                hp: 5,
-                hpMax: 5,
+            energy: {
+                stamina: 3,
+                staminaMax: 3,
+                metabolizes: [],
                 storage: 0,
                 storageMax: 0,
             },

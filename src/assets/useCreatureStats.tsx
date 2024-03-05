@@ -4,46 +4,46 @@ export default function useCreatureStats() {
 
     const harm = (creature: Creature, dmg: number) => {
         let newCreature = creature;
-        let newHp = creature.general.health.hp - dmg;
+        let newHp = creature.general.combat.hp - dmg;
         if (newHp > 0) {
-            newCreature.general.health.hp = newHp;
+            newCreature.general.combat.hp = newHp;
         } else {
-            newCreature.general.health.hp = 0;
+            newCreature.general.combat.hp = 0;
         }
         return newCreature;
     }
 
     const heal = (creature: Creature, dmg: number) => {
         let newCreature = creature;
-        let newHp = creature.general.health.hp + dmg;
-        const maxHp = creature.general.health.hpMax;
+        let newHp = creature.general.combat.hp + dmg;
+        const maxHp = creature.general.combat.hpMax;
         if (newHp < maxHp) {
-            newCreature.general.health.hp = newHp;
+            newCreature.general.combat.hp = newHp;
         } else {
-            newCreature.general.health.hp = maxHp;
+            newCreature.general.combat.hp = maxHp;
         }
         return newCreature;
     }
 
     const tire = (creature: Creature, en: number) => {
         let newCreature = creature;
-        let newEn = creature.general.health.energy - en;
+        let newEn = creature.general.energy.stamina - en;
         if (newEn > 0) {
-            newCreature.general.health.energy = newEn;
+            newCreature.general.energy.stamina = newEn;
         } else {
-            newCreature.general.health.energy = 0;
+            newCreature.general.energy.stamina = 0;
         }
         return newCreature;
     }
 
     const rest = (creature: Creature, en: number) => {
         let newCreature = creature;
-        let newEn = creature.general.health.energy + en;
-        const maxEn = creature.general.health.energyMax;
+        let newEn = creature.general.energy.stamina + en;
+        const maxEn = creature.general.energy.staminaMax;
         if (newEn < maxEn) {
-            newCreature.general.health.energy = newEn;
+            newCreature.general.energy.stamina = newEn;
         } else {
-            newCreature.general.health.energy = maxEn;
+            newCreature.general.energy.stamina = maxEn;
         }
         return newCreature;
     }

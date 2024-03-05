@@ -1,5 +1,6 @@
 import { Creature, Tile } from "../type";
 import useAppStore from "../useAppStore";
+// import useAI from "./useAI";
 import useBasicFunction from "./useBasicFunction";
 import useCompass from "./useCompass";
 import useCreatureStats from "./useCreatureStats";
@@ -12,6 +13,7 @@ export default function useCreature() {
         setMapData
     } = useAppStore();
     const { getRandomNum } = useBasicFunction();
+    // const { prioritize } = useAI();
     const {
         guessLF, guessF, guessRF,
         guessLB, guessB, guessRB,
@@ -27,7 +29,8 @@ export default function useCreature() {
     const creatureDataBase: Creature[] = [
         {
             name: "vektor gamus",
-            type: "alien",
+            type: "NPC",
+            genepool: [],
             orientation: 0,
             alive: true,
             general: {
@@ -49,13 +52,13 @@ export default function useCreature() {
                 combat: {
                     attack: 0,
                     defence: 0,
-                },
-                health: {
-                    energy: 3,
-                    energyMax: 3,
-                    energySourse: [],
                     hp: 5,
                     hpMax: 5,
+                },
+                energy: {
+                    stamina: 3,
+                    staminaMax: 3,
+                    metabolizes: [],
                     storage: 0,
                     storageMax: 0,
                 },
@@ -86,18 +89,18 @@ export default function useCreature() {
 
         if (occupants !== undefined) {
             const dmg = attacker.combat.attack - occupants.combat.defence
-            const newOccHp = occupants.health.hp - dmg;
+            const newOccHp = occupants.combat.hp - dmg;
 
             if (dmg > 0 && newOccHp <= 0) {
-                occupants.health.hp = 0;
+                occupants.combat.hp = 0;
                 const energyGain = Math.floor(attacker.body.size / 100) + 1;
-                const newEnergy = attacker.health.energy + energyGain;
-                const energyMax = attacker.health.energyMax;
+                const newEnergy = attacker.energy.stamina + energyGain;
+                const energyMax = attacker.energy.staminaMax;
 
                 if (energyMax < newEnergy) {
-                    attacker.health.energy = energyMax;
+                    attacker.energy.stamina = energyMax;
                 } else {
-                    attacker.health.energy = newEnergy;
+                    attacker.energy.stamina = newEnergy;
                 }
 
                 if (((occupants.body.size * 2) <= attacker.body.size)) {
@@ -109,7 +112,7 @@ export default function useCreature() {
                 }
 
             } else if (dmg > 0) {
-                occupants.health.hp = newOccHp;
+                occupants.combat.hp = newOccHp;
                 return false;
 
             } else {
@@ -170,8 +173,8 @@ export default function useCreature() {
     }
 
     const forceRest = (creature: Creature) => {
-        if (!creature.general.health.energy) {
-            creature.general.health.energy++;
+        if (!creature.general.energy.stamina) {
+            creature.general.energy.stamina++;
             setMapData(mapData);
             return false;
         } else { return true }
@@ -199,7 +202,7 @@ export default function useCreature() {
             if (!creature) { return }
 
             /*CHECK IF ALIVE*/
-            if (!creature.general.health.hp) { return }
+            if (!creature.general.combat.hp) { return }
 
             /*ROTATE CREATURE THEN EXIT*/
             if (key === "r" || key === "R") {
@@ -263,9 +266,9 @@ export default function useCreature() {
     ) => {
         mapData.map(tile => tile.seen = 0);
         const extraSight = roundReach(mapData, index, (creature.general.awareness.all + 1));
-        extraSight.forEach(ind => mapData[ind].seen = 50);
+        extraSight.forEach(ind => mapData[ind].seen = 25);
         const sight = roundReach(mapData, index, creature.general.awareness.all);
-        sight.forEach(ind => mapData[ind].seen = 100);
+        sight.forEach(index => mapData[index].seen = 100);
     }
 
     const moveLF = (
@@ -273,7 +276,7 @@ export default function useCreature() {
         fromIndex: number,
         mapData: Tile[]
     ) => {
-        const { y: pcY, z: pcZ } = mapData[fromIndex].coor;
+        const { y: pcY, z: pcZ } = mapData[fromIndex].info.coor;
         const mapRad = mapNums.mapRadius;
         if (pcZ < mapRad && pcY > -mapRad) {
             creature.orientation = -60;
@@ -294,12 +297,16 @@ export default function useCreature() {
         fromIndex: number,
         mapData: Tile[]
     ) => {
-        const { x: pcX, y: pcY } = mapData[fromIndex].coor;
+        const { x: pcX, y: pcY } = mapData[fromIndex].info.coor;
         const mapRad = mapNums.mapRadius;
         if (pcX < mapRad && pcY > -mapRad) {
             creature.orientation = 0;
             const rested = forceRest(creature);
             if (rested) {
+                // /*TESTNO OKOLJE*/
+                // const arr = roundReach(mapData, fromIndex, 2);
+                // const newMapData = prioritize(fromIndex, creature, arr, mapData);
+                // /*TESTNO OKOLJE*/
                 startMove(
                     creature,
                     mapData,
@@ -315,7 +322,7 @@ export default function useCreature() {
         fromIndex: number,
         mapData: Tile[]
     ) => {
-        const { x: pcX, z: pcZ } = mapData[fromIndex].coor;
+        const { x: pcX, z: pcZ } = mapData[fromIndex].info.coor;
         const mapRad = mapNums.mapRadius;
         if (pcX < mapRad && pcZ > -mapRad) {
             creature.orientation = 60;
@@ -336,7 +343,7 @@ export default function useCreature() {
         fromIndex: number,
         mapData: Tile[]
     ) => {
-        const { x: pcX, z: pcZ } = mapData[fromIndex].coor;
+        const { x: pcX, z: pcZ } = mapData[fromIndex].info.coor;
         const mapRad = mapNums.mapRadius;
         if (pcZ < mapRad && pcX > -mapRad) {
             creature.orientation = -120;
@@ -357,7 +364,7 @@ export default function useCreature() {
         fromIndex: number,
         mapData: Tile[]
     ) => {
-        const { x: pcX, y: pcY } = mapData[fromIndex].coor;
+        const { x: pcX, y: pcY } = mapData[fromIndex].info.coor;
         const mapRad = mapNums.mapRadius;
         if (pcY < mapRad && pcX > -mapRad) {
             creature.orientation = 180;
@@ -378,7 +385,7 @@ export default function useCreature() {
         fromIndex: number,
         mapData: Tile[]
     ) => {
-        const { y: pcY, z: pcZ } = mapData[fromIndex].coor;
+        const { y: pcY, z: pcZ } = mapData[fromIndex].info.coor;
         const mapRadius = mapNums.mapRadius;
         if (pcZ > -mapRadius && pcY < mapRadius) {
             creature.orientation = 120;

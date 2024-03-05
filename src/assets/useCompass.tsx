@@ -43,7 +43,7 @@ export default function useCompass() {
         rad: number
     ) => {
 
-        const { x, y, z } = map[center].coor;
+        const { x, y, z } = map[center].info.coor;
         const mapRad = mapNums.mapRadius;
 
         /*OZAVESTI ROB*/
@@ -109,28 +109,32 @@ export default function useCompass() {
             if (x !== mapRad) {
                 let slide = 0;
                 let offset = 0;
-                if (
-                    map[pozIndex].coor.z === mapRad &&
-                    map[pozIndex].coor.y !== -mapRad &&
-                    zPoz + i < rad
-                ) {
-                    pozIndex = guessF(map[pozIndex].coor.x, pozIndex, mapRad);
-                    pozCollided++;
-                } else {
-                    pozIndex = guessRF(map[pozIndex].coor.x, pozIndex, mapRad);
-                }
-
                 if (pozIndex < map.length) {
+                    if (
+                        map[pozIndex].info.coor.z === mapRad &&
+                        map[pozIndex].info.coor.y !== -mapRad &&
+                        zPoz + i < rad
+                    ) {
+                        pozIndex = guessF(map[pozIndex].info.coor.x, pozIndex, mapRad);
+                        pozCollided++;
+                    } else {
+                        pozIndex = guessRF(map[pozIndex].info.coor.x, pozIndex, mapRad);
+                    }
+
                     if (x >= 0) {
                         for (let j = 0; j < (yNeg + zNeg - i); j++) {
-                            indexArr.push(pozIndex + j);
+                            if (pozIndex + j < map.length) {
+                                indexArr.push(pozIndex + j);
+                            }
                         }
                     } else {
                         if (zPoz < rad || yPoz < rad) { offset = 1 }
                         if (pozCollided > offset) { slide = pozCollided - offset }
                         if (i - yPoz > 0 && rad + x <= 0) { slide = i - yPoz }
                         for (let j = 0; j < (zPoz + yPoz - i + offset + slide); j++) {
-                            indexArr.push(pozIndex + j);
+                            if (pozIndex + j < map.length) {
+                                indexArr.push(pozIndex + j);
+                            }
                         }
                     }
                 }
@@ -142,28 +146,32 @@ export default function useCompass() {
             let slide = 0;
             let offset = 0;
             if (-x !== mapRad) {
-                if (
-                    map[negIndex].coor.y === -mapRad &&
-                    map[negIndex].coor.z !== mapRad &&
-                    yNeg + i < rad
-                ) {
-                    negIndex = guessLB(map[negIndex].coor.x, negIndex, mapRad);
-                    negCollided++;
-                } else {
-                    negIndex = guessB(map[negIndex].coor.x, negIndex, mapRad);
-                }
-
                 if (negIndex > -1) {
+                    if (
+                        map[negIndex].info.coor.y === -mapRad &&
+                        map[negIndex].info.coor.z !== mapRad &&
+                        yNeg + i < rad
+                    ) {
+                        negIndex = guessLB(map[negIndex].info.coor.x, negIndex, mapRad);
+                        negCollided++;
+                    } else {
+                        negIndex = guessB(map[negIndex].info.coor.x, negIndex, mapRad);
+                    }
+
                     if (x <= 0) {
                         for (let j = 0; j < (zPoz + yPoz - i); j++) {
-                            indexArr.push(negIndex + j);
+                            if (negIndex + j > -1) {
+                                indexArr.push(negIndex + j);
+                            }
                         }
                     } else {
                         if (yNeg < rad || zNeg < rad) { offset = 1 }
                         if (negCollided > offset) { slide = negCollided - offset }
                         if (i - zNeg > 0 && rad - x <= 0) { slide = i - zNeg }
                         for (let j = 0; j < (yNeg + zNeg - i + offset + slide); j++) {
-                            indexArr.push(negIndex + j);
+                            if (negIndex + j > -1) {
+                                indexArr.push(negIndex + j);
+                            }
                         }
                     }
                 }
