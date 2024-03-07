@@ -1,6 +1,5 @@
 import { Creature, Tile } from "../type";
 import useAppStore from "../useAppStore";
-// import useAI from "./useAI";
 import useBasicFunction from "./useBasicFunction";
 import useCompass from "./useCompass";
 import useCreatureStats from "./useCreatureStats";
@@ -13,7 +12,6 @@ export default function useCreature() {
         setMapData
     } = useAppStore();
     const { getRandomNum } = useBasicFunction();
-    // const { prioritize } = useAI();
     const {
         guessLF, guessF, guessRF,
         guessLB, guessB, guessRB,
@@ -303,10 +301,6 @@ export default function useCreature() {
             creature.orientation = 0;
             const rested = forceRest(creature);
             if (rested) {
-                // /*TESTNO OKOLJE*/
-                // const arr = roundReach(mapData, fromIndex, 2);
-                // const newMapData = prioritize(fromIndex, creature, arr, mapData);
-                // /*TESTNO OKOLJE*/
                 startMove(
                     creature,
                     mapData,

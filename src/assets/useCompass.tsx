@@ -40,7 +40,8 @@ export default function useCompass() {
     const roundReach = (
         map: Tile[],
         center: number,
-        rad: number
+        rad: number,
+        excludeCenter?: boolean
     ) => {
 
         const { x, y, z } = map[center].info.coor;
@@ -96,11 +97,15 @@ export default function useCompass() {
 
         if (x >= 0) {
             for (let i = 0; i < (yNeg + zNeg + 1); i++) {
-                indexArr.push(center - yNeg + i);
+                if (excludeCenter && center - yNeg + i === center) { } else {
+                    indexArr.push(center - yNeg + i);
+                }
             }
         } else {
             for (let i = 0; i < (zPoz + yPoz + 1); i++) {
-                indexArr.push(center - zPoz + i);
+                if (excludeCenter && center - zPoz + i === center) { } else {
+                    indexArr.push(center - zPoz + i);
+                }
             }
         } // INDEXI Z OSI
 

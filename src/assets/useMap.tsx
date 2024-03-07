@@ -217,7 +217,7 @@ export default function useMap() {
             const indexArr: number[] = [];
             const coorArr: Coor[] = [];
             const tileTypeArr: TileType[] = [];
-            const indexMapArr = roundReach(hexes, i, 1);
+            const indexMapArr = roundReach(hexes, i, 1, true);
             indexMapArr.forEach(el => {
                 indexArr.push(hexes[el].info.index);
                 coorArr.push(hexes[el].info.coor);

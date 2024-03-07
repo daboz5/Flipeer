@@ -1,10 +1,6 @@
-import { Coor, Creature, Tile, TileEvaluation } from "../type"
-import useAppStore from "../useAppStore";
+import { Creature, Tile, TileEvaluation } from "../type"
 
 export default function useAI() {
-
-    const { mapNums } = useAppStore();
-    const mapRad = mapNums.mapRadius;
 
     const evaluate = (
         creature: Creature,
@@ -87,34 +83,65 @@ export default function useAI() {
     };
 
     const findPath = (
-        whereFrom: number,
-        whereTo: number,
+        inxFrom: number,
+        inxTo: number,
+        searchData: number[],
         mapData: Tile[],
     ) => {
-        const startCoor = mapData[whereFrom].info.coor;
-        const finishCoor = mapData[whereTo].info.coor;
-        let fromCoor = startCoor;
-        finishCoor
-        fromCoor
-        mapRad
 
-        if (whereFrom === whereTo) {
-            return;
-        } else {
-            let srcCoor: {
-                to: Coor,
-                from: Coor
-            }[] = [];
+        const start = { from: inxFrom, to: inxFrom }
 
-            let found = false;
-            while (!found || srcCoor.length >= mapData.length) {
-                /*NOT FINISHED*/
+        /*MARK POSSIBLE WAYS*/
+        let markCoor: {
+            from: number,
+            to: number
+        }[] = [start];
+        let fromInx = inxFrom;
+        let found = false;
+
+        for (let i = 0; i < searchData.length; i++) {
+            if (i > 0 && markCoor.length === 1) {
+                i = searchData.length;
+            } else {
+                let mD = mapData[fromInx];
+
+                for (let j = 0; j < 6; j++) {
+                    if (markCoor.findIndex(mark => mark.to === mD.context.indexes[j]) === -1) {
+                        let newLocation = {
+                            from: fromInx,
+                            to: mD.context.indexes[j]
+                        }
+                        markCoor.push(newLocation);
+                        if (mD.context.indexes[j] === inxTo) { found = true }
+                    }
+                }
+
+                if (found) { i = searchData.length }
+                else { fromInx = markCoor[i + 1].to }
             }
         }
-    }
+
+        /*DETERMINE PATH*/
+        if (found) {
+            let path = [];
+            let where = inxTo;
+            let finished = false;
+            while (!finished) {
+                const track = markCoor.find(mark => mark.to === where);
+                if (track) {
+                    path.push(track);
+                    where = track.from;
+                    if (track.to === track.from) { finished = true }
+                } else { finished = true }
+            }
+
+            return path.reverse();
+        } else {
+            return start;
+        }
+    };
 
     const prioritize = (
-        center: number,
         creature: Creature,
         indexArr: number[],
         mapData: Tile[],
@@ -150,11 +177,13 @@ export default function useAI() {
         } else {
             /*MOVE*/
         }
-        const path = findPath(center, 23, mapData);
-        console.log(path);
+
+        /*PRODUKT MORA BITI SPECIFIČNI INDEX + OPOZORILO*/
+        // console.log(path);
     }
 
     return {
-        prioritize
+        prioritize,
+        findPath
     }
 }
