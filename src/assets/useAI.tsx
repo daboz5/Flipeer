@@ -183,7 +183,6 @@ export default function useAI() {
             if (el.hardNo) { hardNoArr.push(el.index) }
 
             if (pastInterest === -1) {
-                console.log("here")
                 if (bestArr.length < 3) {
                     bestArr.push({
                         desire: el.desire,
@@ -294,7 +293,7 @@ export default function useAI() {
                 if (option === moveEvaluation.length) { return decision }
             }
         }
-        /*UGOTAVLJANJE KROGOV JE ŠE VEDNO DELNO POKVARJENO, POPRAVI*/
+        /*UGOTAVLJANJE KROGOV JE DELNO POKVARJENO, POPRAVI*/
     }
 
     const fleeEval = (
