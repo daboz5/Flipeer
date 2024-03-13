@@ -1,40 +1,53 @@
-import { Tile } from "../type";
+import { Coor, MoveEval, Tile } from "../type";
 import useAppStore from "../useAppStore";
 
 export default function useCompass() {
 
     const { mapNums } = useAppStore();
+    const { mapRadius: mapRad } = mapNums;
 
-    const guessLF = (index: number) => {
-        return index - 1;
+    const guessLF = (index: number, coor: Coor) => {
+        if (coor.y - 1 >= -mapRad && coor.z + 1 <= mapRad) {
+            return index - 1;
+        } else { return index }
     }
 
-    const guessF = (x: number, index: number, mapRad: number) => {
-        let midDis = Math.abs(x);
-        if (x < 0) { midDis-- }
-        return index + (mapRad * 2) - midDis;
+    const guessF = (index: number, coor: Coor, mapRad: number) => {
+        if (coor.y - 1 >= -mapRad && coor.x + 1 <= mapRad) {
+            let midDis = Math.abs(coor.x);
+            if (coor.x < 0) { midDis-- }
+            return index + (mapRad * 2) - midDis;
+        } else { return index }
     }
 
-    const guessRF = (x: number, index: number, mapRad: number) => {
-        let midDis = Math.abs(x);
-        if (x < 0) { midDis-- }
-        return index + ((mapRad * 2) + 1) - midDis;
+    const guessRF = (index: number, coor: Coor, mapRad: number) => {
+        if (coor.z - 1 >= -mapRad && coor.x + 1 <= mapRad) {
+            let midDis = Math.abs(coor.x);
+            if (coor.x < 0) { midDis-- }
+            return index + ((mapRad * 2) + 1) - midDis;
+        } else { return index }
     }
 
-    const guessLB = (x: number, index: number, mapRad: number) => {
-        let midDis = Math.abs(x);
-        if (x > 0) { midDis-- }
-        return index - (((mapRad * 2) + 1)) + midDis;
+    const guessLB = (index: number, coor: Coor, mapRad: number) => {
+        if (coor.x - 1 >= -mapRad && coor.z + 1 <= mapRad) {
+            let midDis = Math.abs(coor.x);
+            if (coor.x > 0) { midDis-- }
+            return index - (((mapRad * 2) + 1)) + midDis;
+        } else { return index }
     }
 
-    const guessB = (x: number, index: number, mapRad: number) => {
-        let midDis = Math.abs(x);
-        if (x > 0) { midDis-- }
-        return index - (mapRad * 2) + midDis;
+    const guessB = (index: number, coor: Coor, mapRad: number) => {
+        if (coor.x - 1 >= -mapRad && coor.y + 1 <= mapRad) {
+            let midDis = Math.abs(coor.x);
+            if (coor.x > 0) { midDis-- }
+            return index - (mapRad * 2) + midDis;
+        } else { return index }
     }
 
-    const guessRB = (index: number) => {
-        return index + 1;
+    const guessRB = (index: number, coor: Coor) => {
+        if (coor.z - 1 >= -mapRad && coor.y + 1 <= mapRad) {
+            return index + 1;
+        } else { return index }
     }
 
     const roundReach = (
@@ -45,7 +58,6 @@ export default function useCompass() {
     ) => {
 
         const { x, y, z } = map[center].info.coor;
-        const mapRad = mapNums.mapRadius;
 
         /*OZAVESTI ROB*/
         // let xNeg = rad;
@@ -120,10 +132,10 @@ export default function useCompass() {
                         map[pozIndex].info.coor.y !== -mapRad &&
                         zPoz + i < rad
                     ) {
-                        pozIndex = guessF(map[pozIndex].info.coor.x, pozIndex, mapRad);
+                        pozIndex = guessF(pozIndex, map[pozIndex].info.coor, mapRad);
                         pozCollided++;
                     } else {
-                        pozIndex = guessRF(map[pozIndex].info.coor.x, pozIndex, mapRad);
+                        pozIndex = guessRF(pozIndex, map[pozIndex].info.coor, mapRad);
                     }
 
                     if (x >= 0) {
@@ -157,10 +169,10 @@ export default function useCompass() {
                         map[negIndex].info.coor.z !== mapRad &&
                         yNeg + i < rad
                     ) {
-                        negIndex = guessLB(map[negIndex].info.coor.x, negIndex, mapRad);
+                        negIndex = guessLB(negIndex, map[negIndex].info.coor, mapRad);
                         negCollided++;
                     } else {
-                        negIndex = guessB(map[negIndex].info.coor.x, negIndex, mapRad);
+                        negIndex = guessB(negIndex, map[negIndex].info.coor, mapRad);
                     }
 
                     if (x <= 0) {
@@ -186,9 +198,345 @@ export default function useCompass() {
         return indexArr;
     }
 
+    const findOppositeIndex = (
+        index: number,
+        indexTo: number,
+        mapData: Tile[]
+    ) => {
+
+        const fromCoor = mapData[index].info.coor;
+        const { x: fromX, y: fromY, z: fromZ } = fromCoor;
+        const toCoor = mapData[indexTo].info.coor;
+        const { x: toX, y: toY, z: toZ } = toCoor;
+
+        let tryToFlee: MoveEval = {
+            F: {
+                loc: index,
+                str: 0
+            },
+            B: {
+                loc: index,
+                str: 0
+            },
+            RF: {
+                loc: index,
+                str: 0
+            },
+            LF: {
+                loc: index,
+                str: 0
+            },
+            RB: {
+                loc: index,
+                str: 0
+            },
+            LB: {
+                loc: index,
+                str: 0
+            }
+        };
+
+        /*FIND DIRECTIONS TO FLEE*/
+        if (fromX + 1 === toX && fromY - 1 === toY) {
+            tryToFlee.B.loc = guessB(index, fromCoor, mapRad);
+            tryToFlee.B.str = 4;
+            tryToFlee.LB.loc = guessLB(index, fromCoor, mapRad);
+            tryToFlee.LB.str = 3;
+            tryToFlee.RB.loc = guessRB(index, fromCoor);
+            tryToFlee.RB.str = 3;
+            tryToFlee.LF.loc = guessLF(index, fromCoor);
+            tryToFlee.LF.str = 2;
+            tryToFlee.RF.loc = guessRF(index, fromCoor, mapRad);
+            tryToFlee.RF.str = 2;
+            tryToFlee.F.loc = guessF(index, fromCoor, mapRad);
+            tryToFlee.F.str = 1;
+        }
+
+        else if (fromX + 1 === toX && fromZ - 1 === toZ) {
+            tryToFlee.LB.loc = guessLB(index, fromCoor, mapRad);
+            tryToFlee.LB.str = 4;
+            tryToFlee.LF.loc = guessLF(index, fromCoor);
+            tryToFlee.LF.str = 3;
+            tryToFlee.B.loc = guessB(index, fromCoor, mapRad);
+            tryToFlee.B.str = 3;
+            tryToFlee.F.loc = guessF(index, fromCoor, mapRad);
+            tryToFlee.F.str = 2;
+            tryToFlee.RB.loc = guessRB(index, fromCoor);
+            tryToFlee.RB.str = 2;
+            tryToFlee.RF.loc = guessRF(index, fromCoor, mapRad);
+            tryToFlee.RF.str = 1;
+        }
+
+        else if (fromX - 1 === toX && fromY + 1 === toY) {
+            tryToFlee.F.loc = guessF(index, fromCoor, mapRad);
+            tryToFlee.F.str = 4;
+            tryToFlee.LF.loc = guessLF(index, fromCoor);
+            tryToFlee.LF.str = 3;
+            tryToFlee.RF.loc = guessRF(index, fromCoor, mapRad);
+            tryToFlee.RF.str = 3;
+            tryToFlee.LB.loc = guessLB(index, fromCoor, mapRad);
+            tryToFlee.LB.str = 2;
+            tryToFlee.RB.loc = guessRB(index, fromCoor);
+            tryToFlee.RB.str = 2;
+            tryToFlee.B.loc = guessB(index, fromCoor, mapRad);
+            tryToFlee.B.str = 1;
+        }
+
+        else if (fromX - 1 === toX && fromZ + 1 === toZ) {
+            tryToFlee.RF.loc = guessRF(index, fromCoor, mapRad);
+            tryToFlee.RF.str = 4;
+            tryToFlee.F.loc = guessF(index, fromCoor, mapRad);
+            tryToFlee.F.str = 3;
+            tryToFlee.RB.loc = guessRB(index, fromCoor);
+            tryToFlee.RB.str = 3;
+            tryToFlee.LF.loc = guessLF(index, fromCoor);
+            tryToFlee.LF.str = 2;
+            tryToFlee.B.loc = guessB(index, fromCoor, mapRad);
+            tryToFlee.B.str = 2;
+            tryToFlee.LB.loc = guessLB(index, fromCoor, mapRad);
+            tryToFlee.LB.str = 1;
+        }
+
+        else if (fromY - 1 === toY && fromZ + 1 === toZ) {
+            tryToFlee.RB.loc = guessRB(index, fromCoor);
+            tryToFlee.RB.str = 4;
+            tryToFlee.RF.loc = guessRF(index, fromCoor, mapRad);
+            tryToFlee.RF.str = 3;
+            tryToFlee.B.loc = guessB(index, fromCoor, mapRad);
+            tryToFlee.B.str = 3;
+            tryToFlee.F.loc = guessF(index, fromCoor, mapRad);
+            tryToFlee.F.str = 2;
+            tryToFlee.LB.loc = guessLB(index, fromCoor, mapRad);
+            tryToFlee.LB.str = 2;
+            tryToFlee.LF.loc = guessLF(index, fromCoor);
+            tryToFlee.LF.str = 1;
+        }
+
+        else if (fromY + 1 === toY && fromZ - 1 === toZ) {
+            tryToFlee.LF.loc = guessLF(index, fromCoor);
+            tryToFlee.LF.str = 4;
+            tryToFlee.F.loc = guessF(index, fromCoor, mapRad);
+            tryToFlee.F.str = 3;
+            tryToFlee.LB.loc = guessLB(index, fromCoor, mapRad);
+            tryToFlee.LB.str = 3;
+            tryToFlee.RF.loc = guessRF(index, fromCoor, mapRad);
+            tryToFlee.RF.str = 2;
+            tryToFlee.B.loc = guessB(index, fromCoor, mapRad);
+            tryToFlee.B.str = 2;
+            tryToFlee.RB.loc = guessRB(index, fromCoor);
+            tryToFlee.RB.str = 1;
+        }
+
+        else if (indexTo === index) {
+            tryToFlee.LF.loc = guessLF(index, fromCoor);
+            tryToFlee.LF.str = 4;
+            tryToFlee.LB.loc = guessLB(index, fromCoor, mapRad);
+            tryToFlee.LB.str = 4;
+            tryToFlee.F.loc = guessF(index, fromCoor, mapRad);
+            tryToFlee.F.str = 4;
+            tryToFlee.B.loc = guessB(index, fromCoor, mapRad);
+            tryToFlee.B.str = 4;
+            tryToFlee.RF.loc = guessRF(index, fromCoor, mapRad);
+            tryToFlee.RF.str = 4;
+            tryToFlee.RB.loc = guessRB(index, fromCoor);
+            tryToFlee.RB.str = 4;
+        }
+
+        /*FIX IF BLOCKED*/
+        if (tryToFlee.F.loc === index) {
+            tryToFlee.F.str = 0;
+        }
+        if (tryToFlee.B.loc === index) {
+            tryToFlee.B.str = 0;
+        }
+        if (tryToFlee.LF.loc === index) {
+            tryToFlee.LF.str = 0;
+        }
+        if (tryToFlee.RF.loc === index) {
+            tryToFlee.RF.str = 0;
+        }
+        if (tryToFlee.LB.loc === index) {
+            tryToFlee.LB.str = 0;
+        }
+        if (tryToFlee.RB.loc === index) {
+            tryToFlee.RB.str = 0;
+        }
+
+        return tryToFlee;
+    }
+
+    const findTowardsIndex = (
+        index: number,
+        indexTo: number,
+        mapData: Tile[]
+    ) => {
+
+        const fromCoor = mapData[index].info.coor;
+        const { x: fromX, y: fromY, z: fromZ } = fromCoor;
+        const toCoor = mapData[indexTo].info.coor;
+        const { x: toX, y: toY, z: toZ } = toCoor;
+
+        let tryToHunt: MoveEval = {
+            F: {
+                loc: index,
+                str: 0
+            },
+            B: {
+                loc: index,
+                str: 0
+            },
+            RF: {
+                loc: index,
+                str: 0
+            },
+            LF: {
+                loc: index,
+                str: 0
+            },
+            RB: {
+                loc: index,
+                str: 0
+            },
+            LB: {
+                loc: index,
+                str: 0
+            }
+        };
+
+        /*FIND OPTIMAL DIRECTIONS TO MOVE*/
+        if (fromX - 1 === toX && fromY + 1 === toY) {
+            tryToHunt.B.loc = guessB(index, fromCoor, mapRad);
+            tryToHunt.B.str = 4;
+            tryToHunt.LB.loc = guessLB(index, fromCoor, mapRad);
+            tryToHunt.LB.str = 3;
+            tryToHunt.RB.loc = guessRB(index, fromCoor);
+            tryToHunt.RB.str = 3;
+            tryToHunt.LF.loc = guessLF(index, fromCoor);
+            tryToHunt.LF.str = 2;
+            tryToHunt.RF.loc = guessRF(index, fromCoor, mapRad);
+            tryToHunt.RF.str = 2;
+            tryToHunt.F.loc = guessF(index, fromCoor, mapRad);
+            tryToHunt.F.str = 1;
+        }
+
+        else if (fromX - 1 === toX && fromZ + 1 === toZ) {
+            tryToHunt.LB.loc = guessLB(index, fromCoor, mapRad);
+            tryToHunt.LB.str = 4;
+            tryToHunt.LF.loc = guessLF(index, fromCoor);
+            tryToHunt.LF.str = 3;
+            tryToHunt.B.loc = guessB(index, fromCoor, mapRad);
+            tryToHunt.B.str = 3;
+            tryToHunt.F.loc = guessF(index, fromCoor, mapRad);
+            tryToHunt.F.str = 2;
+            tryToHunt.RB.loc = guessRB(index, fromCoor);
+            tryToHunt.RB.str = 2;
+            tryToHunt.RF.loc = guessRF(index, fromCoor, mapRad);
+            tryToHunt.RF.str = 1;
+        }
+
+        else if (fromX + 1 === toX && fromY - 1 === toY) {
+            tryToHunt.F.loc = guessF(index, fromCoor, mapRad);
+            tryToHunt.F.str = 4;
+            tryToHunt.LF.loc = guessLF(index, fromCoor);
+            tryToHunt.LF.str = 3;
+            tryToHunt.RF.loc = guessRF(index, fromCoor, mapRad);
+            tryToHunt.RF.str = 3;
+            tryToHunt.LB.loc = guessLB(index, fromCoor, mapRad);
+            tryToHunt.LB.str = 2;
+            tryToHunt.RB.loc = guessRB(index, fromCoor);
+            tryToHunt.RB.str = 2;
+            tryToHunt.B.loc = guessB(index, fromCoor, mapRad);
+            tryToHunt.B.str = 1;
+        }
+
+        else if (fromX + 1 === toX && fromZ - 1 === toZ) {
+            tryToHunt.RF.loc = guessRF(index, fromCoor, mapRad);
+            tryToHunt.RF.str = 4;
+            tryToHunt.F.loc = guessF(index, fromCoor, mapRad);
+            tryToHunt.F.str = 3;
+            tryToHunt.RB.loc = guessRB(index, fromCoor);
+            tryToHunt.RB.str = 3;
+            tryToHunt.LF.loc = guessLF(index, fromCoor);
+            tryToHunt.LF.str = 2;
+            tryToHunt.B.loc = guessB(index, fromCoor, mapRad);
+            tryToHunt.B.str = 2;
+            tryToHunt.LB.loc = guessLB(index, fromCoor, mapRad);
+            tryToHunt.LB.str = 1;
+        }
+
+        else if (fromY + 1 === toY && fromZ - 1 === toZ) {
+            tryToHunt.RB.loc = guessRB(index, fromCoor);
+            tryToHunt.RB.str = 4;
+            tryToHunt.RF.loc = guessRF(index, fromCoor, mapRad);
+            tryToHunt.RF.str = 3;
+            tryToHunt.B.loc = guessB(index, fromCoor, mapRad);
+            tryToHunt.B.str = 3;
+            tryToHunt.F.loc = guessF(index, fromCoor, mapRad);
+            tryToHunt.F.str = 2;
+            tryToHunt.LB.loc = guessLB(index, fromCoor, mapRad);
+            tryToHunt.LB.str = 2;
+            tryToHunt.LF.loc = guessLF(index, fromCoor);
+            tryToHunt.LF.str = 1;
+        }
+
+        else if (fromY - 1 === toY && fromZ + 1 === toZ) {
+            tryToHunt.LF.loc = guessLF(index, fromCoor);
+            tryToHunt.LF.str = 4;
+            tryToHunt.F.loc = guessF(index, fromCoor, mapRad);
+            tryToHunt.F.str = 3;
+            tryToHunt.LB.loc = guessLB(index, fromCoor, mapRad);
+            tryToHunt.LB.str = 3;
+            tryToHunt.RF.loc = guessRF(index, fromCoor, mapRad);
+            tryToHunt.RF.str = 2;
+            tryToHunt.B.loc = guessB(index, fromCoor, mapRad);
+            tryToHunt.B.str = 2;
+            tryToHunt.RB.loc = guessRB(index, fromCoor);
+            tryToHunt.RB.str = 1;
+        }
+
+        else if (indexTo === index) {
+            tryToHunt.LF.loc = guessLF(index, fromCoor);
+            tryToHunt.LF.str = 4;
+            tryToHunt.LB.loc = guessLB(index, fromCoor, mapRad);
+            tryToHunt.LB.str = 4;
+            tryToHunt.F.loc = guessF(index, fromCoor, mapRad);
+            tryToHunt.F.str = 4;
+            tryToHunt.B.loc = guessB(index, fromCoor, mapRad);
+            tryToHunt.B.str = 4;
+            tryToHunt.RF.loc = guessRF(index, fromCoor, mapRad);
+            tryToHunt.RF.str = 4;
+            tryToHunt.RB.loc = guessRB(index, fromCoor);
+            tryToHunt.RB.str = 4;
+        }
+
+        /*FIX IF BLOCKED*/
+        if (tryToHunt.F.loc === index) {
+            tryToHunt.F.str = 0;
+        }
+        if (tryToHunt.B.loc === index) {
+            tryToHunt.B.str = 0;
+        }
+        if (tryToHunt.LF.loc === index) {
+            tryToHunt.LF.str = 0;
+        }
+        if (tryToHunt.RF.loc === index) {
+            tryToHunt.RF.str = 0;
+        }
+        if (tryToHunt.LB.loc === index) {
+            tryToHunt.LB.str = 0;
+        }
+        if (tryToHunt.RB.loc === index) {
+            tryToHunt.RB.str = 0;
+        }
+
+        return tryToHunt;
+    }
+
     return {
         guessLF, guessF, guessRF,
         guessLB, guessB, guessRB,
-        roundReach
+        roundReach,
+        findTowardsIndex,
+        findOppositeIndex
     }
 }

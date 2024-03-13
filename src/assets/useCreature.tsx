@@ -1,5 +1,6 @@
 import { Creature, Tile } from "../type";
 import useAppStore from "../useAppStore";
+import useAI from "./useAI";
 import useBasicFunction from "./useBasicFunction";
 import useCompass from "./useCompass";
 import useCreatureStats from "./useCreatureStats";
@@ -12,6 +13,7 @@ export default function useCreature() {
         setMapData
     } = useAppStore();
     const { getRandomNum } = useBasicFunction();
+    const { prioritize } = useAI();
     const {
         guessLF, guessF, guessRF,
         guessLB, guessB, guessRB,
@@ -26,11 +28,8 @@ export default function useCreature() {
 
     const creatureDataBase: Creature[] = [
         {
-            name: "vektor gamus",
-            type: "NPC",
-            genepool: [],
-            orientation: 0,
             alive: true,
+            genepool: [],
             general: {
                 awareness: {
                     all: 1,
@@ -64,7 +63,10 @@ export default function useCreature() {
                 resistences: [],
                 temperature: [{ scale: 2, description: "hot" }],
             },
-
+            interest: -1,
+            name: "vektor gamus",
+            orientation: 0,
+            type: "NPC",
         },
     ]
 
@@ -274,9 +276,9 @@ export default function useCreature() {
         fromIndex: number,
         mapData: Tile[]
     ) => {
-        const { y: pcY, z: pcZ } = mapData[fromIndex].info.coor;
+        const coor = mapData[fromIndex].info.coor;
         const mapRad = mapNums.mapRadius;
-        if (pcZ < mapRad && pcY > -mapRad) {
+        if (coor.z < mapRad && coor.y > -mapRad) {
             creature.orientation = -60;
             const rested = forceRest(creature);
             if (rested) {
@@ -284,7 +286,7 @@ export default function useCreature() {
                     creature,
                     mapData,
                     fromIndex,
-                    guessLF(fromIndex)
+                    guessLF(fromIndex, coor)
                 );
             }
         }
@@ -295,18 +297,23 @@ export default function useCreature() {
         fromIndex: number,
         mapData: Tile[]
     ) => {
-        const { x: pcX, y: pcY } = mapData[fromIndex].info.coor;
+        const coor = mapData[fromIndex].info.coor;
         const mapRad = mapNums.mapRadius;
-        if (pcX < mapRad && pcY > -mapRad) {
+        if (coor.x < mapRad && coor.y > -mapRad) {
             creature.orientation = 0;
             const rested = forceRest(creature);
             if (rested) {
-                startMove(
-                    creature,
-                    mapData,
-                    fromIndex,
-                    guessF(pcX, fromIndex, mapRad)
-                );
+                /*TESTNO OKOLJE*/
+                const arr = roundReach(mapData, fromIndex, 2);
+                const newMapData = prioritize(fromIndex, arr, mapData);
+                console.log(newMapData)
+                /*TESTNO OKOLJE*/
+                // startMove(
+                //     creature,
+                //     mapData,
+                //     fromIndex,
+                //     guessF(fromIndex, coor, mapRad)
+                // );
             }
         }
     };
@@ -316,9 +323,9 @@ export default function useCreature() {
         fromIndex: number,
         mapData: Tile[]
     ) => {
-        const { x: pcX, z: pcZ } = mapData[fromIndex].info.coor;
+        const coor = mapData[fromIndex].info.coor;
         const mapRad = mapNums.mapRadius;
-        if (pcX < mapRad && pcZ > -mapRad) {
+        if (coor.x < mapRad && coor.z > -mapRad) {
             creature.orientation = 60;
             const rested = forceRest(creature);
             if (rested) {
@@ -326,7 +333,7 @@ export default function useCreature() {
                     creature,
                     mapData,
                     fromIndex,
-                    guessRF(pcX, fromIndex, mapRad)
+                    guessRF(fromIndex, coor, mapRad)
                 );
             }
         }
@@ -337,9 +344,9 @@ export default function useCreature() {
         fromIndex: number,
         mapData: Tile[]
     ) => {
-        const { x: pcX, z: pcZ } = mapData[fromIndex].info.coor;
+        const coor = mapData[fromIndex].info.coor;
         const mapRad = mapNums.mapRadius;
-        if (pcZ < mapRad && pcX > -mapRad) {
+        if (coor.z < mapRad && coor.x > -mapRad) {
             creature.orientation = -120;
             const rested = forceRest(creature);
             if (rested) {
@@ -347,7 +354,7 @@ export default function useCreature() {
                     creature,
                     mapData,
                     fromIndex,
-                    guessLB(pcX, fromIndex, mapRad)
+                    guessLB(fromIndex, coor, mapRad)
                 );
             }
         }
@@ -358,9 +365,9 @@ export default function useCreature() {
         fromIndex: number,
         mapData: Tile[]
     ) => {
-        const { x: pcX, y: pcY } = mapData[fromIndex].info.coor;
+        const coor = mapData[fromIndex].info.coor;
         const mapRad = mapNums.mapRadius;
-        if (pcY < mapRad && pcX > -mapRad) {
+        if (coor.y < mapRad && coor.x > -mapRad) {
             creature.orientation = 180;
             const rested = forceRest(creature);
             if (rested) {
@@ -368,7 +375,7 @@ export default function useCreature() {
                     creature,
                     mapData,
                     fromIndex,
-                    guessB(pcX, fromIndex, mapRad)
+                    guessB(fromIndex, coor, mapRad)
                 );
             }
         }
@@ -379,9 +386,9 @@ export default function useCreature() {
         fromIndex: number,
         mapData: Tile[]
     ) => {
-        const { y: pcY, z: pcZ } = mapData[fromIndex].info.coor;
+        const coor = mapData[fromIndex].info.coor;
         const mapRadius = mapNums.mapRadius;
-        if (pcZ > -mapRadius && pcY < mapRadius) {
+        if (coor.z > -mapRadius && coor.y < mapRadius) {
             creature.orientation = 120;
             const rested = forceRest(creature);
             if (rested) {
@@ -389,7 +396,7 @@ export default function useCreature() {
                     creature,
                     mapData,
                     fromIndex,
-                    guessRB(fromIndex)
+                    guessRB(fromIndex, coor)
                 );
             }
         }

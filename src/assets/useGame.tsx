@@ -14,14 +14,11 @@ export default function useGame() {
     const { createMapData } = useMap();
 
     const newGamePlayer: Creature = {
-        name: "lupus lupus",
-        type: "player",
+        alive: true,
         genepool: [{
             species: "lupus lupus",
             split: 0,
         }],
-        orientation: 0,
-        alive: true,
         general: {
             awareness: {
                 all: 2,
@@ -55,6 +52,10 @@ export default function useGame() {
             resistences: [],
             temperature: [{ scale: 2, description: "hot" }],
         },
+        interest: -1,
+        name: "lupus lupus",
+        orientation: 0,
+        type: "player",
     }
 
     const newGame = () => {

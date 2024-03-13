@@ -107,11 +107,8 @@ type GeneSplit = {
 }
 
 type Creature = {
-    name: string;
-    type: "player" | "NPC";
-    genepool: GeneSplit[];
     alive: boolean;
-    orientation: number;
+    genepool: GeneSplit[];
     general: {
         awareness: {
             all: number;
@@ -145,6 +142,10 @@ type Creature = {
         resistences: Resistence[];
         temperature: Temperatures[];
     };
+    interest: number;
+    name: string;
+    orientation: number;
+    type: "player" | "NPC";
 }
 
 type TileEvaluation = {
@@ -155,6 +156,33 @@ type TileEvaluation = {
     hunt: boolean;
 }
 
+type MoveEval = {
+    F: {
+        loc: index,
+        str: number
+    },
+    B: {
+        loc: index,
+        str: number
+    },
+    RF: {
+        loc: index,
+        str: number
+    },
+    LF: {
+        loc: index,
+        str: number
+    },
+    RB: {
+        loc: index,
+        str: number
+    },
+    LB: {
+        loc: index,
+        str: number
+    }
+}
+
 export {
     Coor,
     TileType,
@@ -163,5 +191,6 @@ export {
     MapNumbers,
     LocalMap,
     Creature,
-    TileEvaluation
+    TileEvaluation,
+    MoveEval
 }
